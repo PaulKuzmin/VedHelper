@@ -1,0 +1,43 @@
+# =============== Android build outputs ===============
+*.apk
+*.ap_
+*.dex
+/build/
+**/build/
+captures/
+output.json
+
+# =============== Gradle ===============
+.gradle/
+local.properties
+*.log
+
+# =============== Kotlin/Java build ===============
+*.class
+*.jar
+*.war
+*.ear
+*.kotlin_module
+.cxx/
+.externalNativeBuild/
+
+# =============== IDE (Android Studio / IntelliJ) ===============
+.idea/
+*.iml
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# =============== Compose specific ===============
+.idea/**/rendering/**
+
+# =============== OS-generated junk ===============
+.DS_Store
+Thumbs.db
+
+# =============== Other ===============
+/.navigation.json
+/captures
