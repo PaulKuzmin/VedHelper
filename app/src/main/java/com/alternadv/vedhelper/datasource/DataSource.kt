@@ -34,7 +34,7 @@ object DataSource {
 
     suspend inline fun <reified T> get(url: String): ResponseModel<T>? {
 
-        Log.d("DataSource", "GET: ${url}")
+        Log.d("DataSource", "GET: $url")
 
         val request = Request.Builder()
             .url(url)
@@ -48,7 +48,7 @@ object DataSource {
 
     suspend inline fun <reified T> getRaw(url: String): T? {
 
-        Log.d("DataSource", "GET: ${url}")
+        Log.d("DataSource", "GET: $url")
 
         val request = Request.Builder()
             .url(url)

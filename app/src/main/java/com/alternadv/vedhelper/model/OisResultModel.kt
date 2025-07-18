@@ -3,8 +3,11 @@ package com.alternadv.vedhelper.model
 import com.squareup.moshi.Json
 
 data class OisResultModel(
-    val ois_text: String?,
-    val ois_list: List<OisModel>?,
+    @param:Json(name = "ois_text")
+    val oisText: String?,
+
+    @param:Json(name = "ois_list")
+    val oisList: List<OisModel>?,
 
     @param:Json(name = "ois_description")
     val oisDescription: Map<String, String>?
@@ -14,7 +17,7 @@ data class OisModel(
     val regnom: String?,
 
     @param:Json(name = "g31_12")
-    val g31_12: String?,
+    val g3112: String?,
 
     val note: String?,
     val document: String?,

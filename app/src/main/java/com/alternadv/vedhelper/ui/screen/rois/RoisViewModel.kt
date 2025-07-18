@@ -59,12 +59,12 @@ class RoisViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = OisSource.get(text)
-                val data = response?.ois_list.orEmpty()
+                val data = response?.oisList.orEmpty()
 
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        oisText = response?.ois_text,
+                        oisText = response?.oisText,
                         items = data,
                         isShowNotFound = data.isEmpty()
                     )

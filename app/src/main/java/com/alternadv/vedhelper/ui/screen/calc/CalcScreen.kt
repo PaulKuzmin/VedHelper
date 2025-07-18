@@ -103,7 +103,7 @@ fun CalcScreen(
 
                 // Всё остальное рисуем, если не загрузка
                 if (state.isShowHint) {
-                    HintCard(viewModel)
+                    HintCard(navController)
                 }
 
                 if (state.isShowCalc) {
@@ -128,7 +128,7 @@ fun CalcScreen(
 }
 
 @Composable
-private fun HintCard(viewModel: CalcViewModel) {
+private fun HintCard(navController: NavController) {
     Column(modifier = Modifier.padding(top = 5.dp)) {
         Card(modifier = Modifier.padding(top = 5.dp)) {
             Column(Modifier.padding(16.dp)) {
@@ -138,8 +138,12 @@ private fun HintCard(viewModel: CalcViewModel) {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
-                    Button(onClick = viewModel::tnvedClick) { Text("ТН ВЭД") }
-                    Button(onClick = viewModel::examplesClick) { Text("Примеры") }
+                    Button(onClick = {
+                        navController.navigate(BottomNavItem.Tnved.route)
+                    }) { Text("ТН ВЭД") }
+                    Button(onClick = {
+                        navController.navigate(BottomNavItem.Examples.route)
+                    }) { Text("Примеры") }
                 }
             }
         }

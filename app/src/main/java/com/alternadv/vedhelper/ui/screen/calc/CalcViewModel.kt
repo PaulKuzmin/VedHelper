@@ -6,7 +6,11 @@ import com.alternadv.vedhelper.datasource.CalcSource
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.Chosen
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class CalcViewModel : ViewModel() {
@@ -16,6 +20,11 @@ class CalcViewModel : ViewModel() {
     private val chosenChangedTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
     init {
+        observeChanges()
+    }
+
+    @OptIn(kotlinx.coroutines.FlowPreview::class)
+    private fun observeChanges() {
         viewModelScope.launch {
             chosenChangedTrigger
                 .debounce(400)
@@ -83,7 +92,7 @@ class CalcViewModel : ViewModel() {
                         it.copy(
                             isShowHint = false,
                             isShowCalc = true,
-                            chosenParams = if (chosen == null) it.chosenParams.copy(paramCost = response?.chosen?.paramCost) else it.chosenParams,
+                            chosenParams = if (chosen == null) it.chosenParams.copy(paramCost = response.chosen?.paramCost) else it.chosenParams,
                             availableCountries = countries,
                             params = CalcMeta(calcInfoName),
                             calcParams = calcParams,
@@ -94,7 +103,7 @@ class CalcViewModel : ViewModel() {
                         )
                     }
                 } else {
-
+                    // TODO: сообщение что не нашли
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -160,14 +169,6 @@ class CalcViewModel : ViewModel() {
             )
         }
         chosenChangedTrigger.tryEmit(Unit)
-    }
-
-    fun tnvedClick() {
-        // TODO: Навигация на справочник ТН ВЭД
-    }
-
-    fun examplesClick() {
-        // TODO: Навигация на примеры
     }
 
     fun calcClick() {
