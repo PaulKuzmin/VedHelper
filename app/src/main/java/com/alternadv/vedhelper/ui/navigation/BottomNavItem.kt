@@ -15,8 +15,8 @@ sealed class BottomNavItem(
         label = "Товары"
     )
 
-    object AutoCalc : BottomNavItem(
-        route = "autocalc",
+    object CarCalc : BottomNavItem(
+        route = "carcalc",
         icon = Icons.Default.DirectionsCar,
         label = "Авто"
     )
@@ -27,10 +27,16 @@ sealed class BottomNavItem(
         label = "Примеры"
     )
 
-    object Home : BottomNavItem(
-        route = "home",
+    object Tnved : BottomNavItem(
+        route = "tnved",
         icon = Icons.Default.FormatListNumbered,
         label = "ТН ВЭД"
+    )
+
+    object TnvedCode : BottomNavItem(
+        route = "tnvedcode",
+        icon = Icons.Default.FormatListNumbered,
+        label = "Код ТН ВЭД"
     )
 
     object Rois : BottomNavItem(

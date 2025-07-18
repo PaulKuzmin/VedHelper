@@ -1,5 +1,7 @@
 package com.alternadv.vedhelper.model
 
+import com.squareup.moshi.Json
+
 data class TnvedNodesModel (
     val nodes: List<TnvedNodeModel>?
 )
@@ -12,8 +14,15 @@ data class TnvedNodeModel(
     val edi2: String?,
     val edi3: String?,
     val dsign: String?,
-    val index_: String?,
+
+    @param:Json(name = "index_")
+    val index: String?,
+
     val idx: String?,
-    val parent_idx: String?,
-    val has_childs: Boolean?
+
+    @param:Json(name = "parent_idx")
+    val parentIdx: String?,
+
+    @param:Json(name = "has_childs")
+    val hasChilds: Boolean?
 )

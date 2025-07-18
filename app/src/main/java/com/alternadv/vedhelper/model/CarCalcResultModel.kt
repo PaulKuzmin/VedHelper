@@ -2,9 +2,9 @@ package com.alternadv.vedhelper.model
 
 import com.squareup.moshi.Json
 
-data class AutoCalcResultModel(
+data class CarCalcResultModel(
     val chosen: ChosenVehicle,
-    val calculation: AutoCalculation
+    val calculation: CarCalculation
 )
 
 data class ChosenVehicle(
@@ -22,19 +22,19 @@ data class ChosenVehicle(
     val ondate: String?
 )
 
-data class AutoCalculation(
+data class CarCalculation(
     val age: Double,
 
     @param:Json(name = "F")
-    val f: AutoPartCalculation?,
+    val f: CarPartCalculation?,
 
     @param:Json(name = "U")
-    val u: AutoPartCalculation?,
+    val u: CarPartCalculation?,
 
     val currencies: Map<String, CalcCurrencyRate>?
 )
 
-data class AutoPartCalculation(
+data class CarPartCalculation(
     val success: Boolean?,
 
     @param:Json(name = "cost_usd")
@@ -52,13 +52,13 @@ data class AutoPartCalculation(
     @param:Json(name = "payments_summa_usd")
     val paymentsSumUsd: Double?,
 
-    val payments: List<AutoCustomsPayment>?,
+    val payments: List<CarCustomsPayment>?,
     val messages: List<CalcMessage>?,
 
     val tnved: String? = null
 )
 
-data class AutoCustomsPayment(
+data class CarCustomsPayment(
     val type: String,
     val name: String,
     val rate: String,

@@ -2,24 +2,24 @@ package com.alternadv.vedhelper.model
 
 import com.squareup.moshi.Json
 
-data class AutoCalcParamsModel(
+data class CarCalcParamsModel(
     @param:Json(name = "calc_params")
-    val calcParams: List<AutoCalcParam>,
+    val calcParams: List<CarCalcParam>,
 
     @param:Json(name = "calc_engines")
-    val calcEngines: List<AutoCalcEngine>,
+    val calcEngines: List<CarCalcEngine>,
 
     @param:Json(name = "calc_engine")
-    val calcEngine: AutoCalcEngine?
+    val calcEngine: CarCalcEngine?
 )
 
-data class AutoCalcParam(
+data class CarCalcParam(
     val name: String,
     val dimension: String,
     val code: String
 )
 
-data class AutoCalcEngine(
+data class CarCalcEngine(
     val id: String,
     val name: String
 )

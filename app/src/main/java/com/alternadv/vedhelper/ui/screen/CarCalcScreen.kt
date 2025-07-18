@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 @Composable
-fun AutoCalcScreen(title: String) {
+fun CarCalcScreen(title: String) {
     Box(
         modifier = Modifier
             .fillMaxSize()

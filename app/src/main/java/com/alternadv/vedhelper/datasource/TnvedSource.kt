@@ -7,7 +7,7 @@ import com.alternadv.vedhelper.model.TnvedNodesModel
 object TnvedSource {
     private const val PATH = "widget/tnved/"
 
-    suspend fun getNodes(id: Number): List<TnvedNodeModel>? {
+    suspend fun getNodes(id: String): List<TnvedNodeModel>? {
         val fullPath = "${PATH}node/${id}"
         val url = DataSource.buildUrl(fullPath, emptyMap())
         val t = DataSource.getRaw<TnvedNodesModel>(url)

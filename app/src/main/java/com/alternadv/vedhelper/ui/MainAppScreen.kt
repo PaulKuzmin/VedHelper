@@ -22,13 +22,14 @@ import androidx.navigation.navArgument
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavigationBar
 import com.alternadv.vedhelper.ui.navigation.DrawerContent
-import com.alternadv.vedhelper.ui.screen.AutoCalcScreen
+import com.alternadv.vedhelper.ui.screen.CarCalcScreen
 import com.alternadv.vedhelper.ui.screen.calc.CalcScreen
-import com.alternadv.vedhelper.ui.screen.ExamplesScreen
-import com.alternadv.vedhelper.ui.screen.HomeScreen
-import com.alternadv.vedhelper.ui.screen.RoisScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
+import com.alternadv.vedhelper.ui.screen.examples.ExamplesScreen
+import com.alternadv.vedhelper.ui.screen.rois.RoisScreen
+import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
+import com.alternadv.vedhelper.ui.screen.tnvedcode.TnvedCodeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,9 +40,9 @@ fun MainAppScreen() {
 
     val bottomItems = listOf(
         BottomNavItem.Calc,
-        BottomNavItem.AutoCalc,
+        BottomNavItem.CarCalc,
         BottomNavItem.Examples,
-        BottomNavItem.Home,
+        BottomNavItem.Tnved,
         BottomNavItem.Rois
     )
 
@@ -51,9 +52,10 @@ fun MainAppScreen() {
     val title = when (currentRoute) {
         BottomNavItem.Calc.route -> "Калькулятор товаров"
         BottomNavItem.CalcResult.route -> "Результаты расчета"
-        BottomNavItem.AutoCalc.route -> "Калькулятор авто"
+        BottomNavItem.CarCalc.route -> "Калькулятор авто"
         BottomNavItem.Examples.route -> "Примеры"
-        BottomNavItem.Home.route -> "ТН ВЭД"
+        BottomNavItem.Tnved.route -> "ТН ВЭД"
+        BottomNavItem.TnvedCode.route -> "Код ТН ВЭД"
         BottomNavItem.Rois.route -> "РОИС"
         else -> "Помощник ВЭД"
     }
@@ -96,7 +98,14 @@ fun MainAppScreen() {
                 startDestination = BottomNavItem.Calc.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                composable(BottomNavItem.Home.route) { HomeScreen(BottomNavItem.Home.label) }
+                composable(BottomNavItem.Tnved.route) { TnvedScreen(navController) }
+                composable(
+                    "${BottomNavItem.TnvedCode.route}/{code}",
+                    arguments = listOf(navArgument("code") { defaultValue = ""; nullable = false}
+                )) { backStackEntry ->
+                    val code = backStackEntry.arguments?.getString("code") ?: ""
+                    TnvedCodeScreen(code = code, navController = navController)
+                }
 
                 composable(BottomNavItem.Calc.route) { CalcScreen(navController, calcResultViewModel) }
                 composable(
@@ -108,9 +117,15 @@ fun MainAppScreen() {
                 }
                 composable(BottomNavItem.CalcResult.route) { CalcResultScreen(calcResultViewModel) }
 
-                composable(BottomNavItem.AutoCalc.route) { AutoCalcScreen(BottomNavItem.AutoCalc.label) }
-                composable(BottomNavItem.Examples.route) { ExamplesScreen(BottomNavItem.Examples.label) }
-                composable(BottomNavItem.Rois.route) { RoisScreen(BottomNavItem.Rois.label) }
+                composable(BottomNavItem.Examples.route) { ExamplesScreen(navController = navController) }
+                composable(BottomNavItem.Examples.route + "/{searchTerm?}") { backStackEntry ->
+                    val searchTerm = backStackEntry.arguments?.getString("searchTerm")
+                    ExamplesScreen(navController, searchTerm)
+                }
+
+                composable(BottomNavItem.Rois.route) { RoisScreen() }
+
+                composable(BottomNavItem.CarCalc.route) { CarCalcScreen(BottomNavItem.CarCalc.label) }
             }
         }
 
