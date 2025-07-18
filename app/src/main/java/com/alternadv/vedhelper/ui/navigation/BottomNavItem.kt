@@ -38,4 +38,10 @@ sealed class BottomNavItem(
         icon = Icons.Default.Lightbulb,
         label = "РОИС"
     )
+
+    object CalcResult : BottomNavItem(
+        route = "calcResult",
+        icon = Icons.Default.Calculate,
+        label = "Результаты расчета"
+    )
 }

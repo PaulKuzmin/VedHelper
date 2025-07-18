@@ -13,8 +13,8 @@ object CalcSource {
         return response?.data
     }
 
-    suspend fun getStats(code: String): StatsModel? {
-        val url = "${DataSource.BASE_URL}/$PATH" + "statsprice/$code?json=1"
+    suspend fun getStats(code: String, queryParams: Map<String, String> = emptyMap()): StatsModel? {
+        val url = DataSource.buildUrl("${PATH}statsprice/$code", queryParams)
         val response = DataSource.get<StatsModel>(url)
         return response?.data
     }

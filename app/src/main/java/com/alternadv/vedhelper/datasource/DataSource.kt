@@ -1,5 +1,6 @@
 package com.alternadv.vedhelper.datasource
 
+import android.util.Log
 import com.alternadv.vedhelper.model.ResponseModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -32,6 +33,9 @@ object DataSource {
         Types.newParameterizedType(ResponseModel::class.java, T::class.java)
 
     suspend inline fun <reified T> get(url: String): ResponseModel<T>? {
+
+        Log.d("DataSource", "GET: ${url}")
+
         val request = Request.Builder()
             .url(url)
             .get()
@@ -43,6 +47,9 @@ object DataSource {
     }
 
     suspend inline fun <reified T> getRaw(url: String): T? {
+
+        Log.d("DataSource", "GET: ${url}")
+
         val request = Request.Builder()
             .url(url)
             .get()

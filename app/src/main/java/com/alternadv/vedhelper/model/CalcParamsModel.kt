@@ -9,10 +9,10 @@ data class CalcParamsModel(
     val countries: List<CountryModel>?,
 
     @param:Json(name = "calc_params")
-    val calcParams: Map<String, CalcParams>?,
+    val calcParams: Map<String, CalcParam>?,
 
     @param:Json(name = "calc_special")
-    val calcSpecial: List<CalcSpecial>?,
+    val calcSpecial: List<CalcSpecialParam>?,
 
     @param:Json(name = "calc_info")
     val calcInfo: CalcInfo?,
@@ -21,38 +21,38 @@ data class CalcParamsModel(
 )
 
 data class CountryModel(
-    val code: String?,
-    val name: String?
+    val code: String,
+    val name: String
 )
 
-data class CalcSpecial(
-    val id: String?,
-    val name: String?,
-    val type: String?,
+data class CalcSpecialParam(
+    val id: String,
+    val name: String,
+    val type: String,
 
     @param:Json(name = "type_name")
-    val typeName: String?
+    val typeName: String
 )
 
 data class Chosen(
-    val code: String?,
-    val direction: String?,
-    val country: String?,
+    val code: String,
+    val direction: String,
+    val country: String,
 
     @param:Json(name = "param_cost")
-    val paramCost: Boolean?,
+    val paramCost: Double?,
 
-    val json: Boolean?,
+    val json: Boolean,
     val specials: Map<String, String>?,
 
     val addons: Map<String, Double>?
 )
 
-data class CalcParams(
-    val code: String?,
-    val name: String?,
-    val dimension: String?,
-    val description: String?
+data class CalcParam(
+    val code: String,
+    val name: String,
+    val dimension: String,
+    val description: String
 )
 
 data class CalcInfo(
