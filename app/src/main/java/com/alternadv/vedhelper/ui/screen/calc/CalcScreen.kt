@@ -26,6 +26,7 @@ import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
 fun CalcScreen(
     navController: NavController,
     calcResultViewModel: CalcResultViewModel,
+    initialCode: String = "",
     viewModel: CalcViewModel = viewModel()
 ) {
 
@@ -33,6 +34,10 @@ fun CalcScreen(
         viewModel.onCalcSuccess = { result ->
             calcResultViewModel.setResult(result)
             navController.navigate(BottomNavItem.CalcResult.route)
+        }
+
+        if (initialCode.isNotBlank()) {
+            viewModel.onSearchInput(initialCode)
         }
     }
 

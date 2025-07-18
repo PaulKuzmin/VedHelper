@@ -13,10 +13,12 @@ import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavigationBar
 import com.alternadv.vedhelper.ui.navigation.DrawerContent
@@ -97,6 +99,13 @@ fun MainAppScreen() {
                 composable(BottomNavItem.Home.route) { HomeScreen(BottomNavItem.Home.label) }
 
                 composable(BottomNavItem.Calc.route) { CalcScreen(navController, calcResultViewModel) }
+                composable(
+                    route = "${BottomNavItem.Calc.route}/{code}",
+                    arguments = listOf(navArgument("code") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val code = backStackEntry.arguments?.getString("code") ?: ""
+                    CalcScreen(navController, calcResultViewModel, initialCode = code)
+                }
                 composable(BottomNavItem.CalcResult.route) { CalcResultScreen(calcResultViewModel) }
 
                 composable(BottomNavItem.AutoCalc.route) { AutoCalcScreen(BottomNavItem.AutoCalc.label) }
