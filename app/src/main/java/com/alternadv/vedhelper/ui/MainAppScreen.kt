@@ -118,7 +118,10 @@ fun MainAppScreen() {
                 composable(BottomNavItem.CalcResult.route) { CalcResultScreen(calcResultViewModel) }
 
                 composable(BottomNavItem.Examples.route) { ExamplesScreen(navController = navController) }
-                composable(BottomNavItem.Examples.route + "/{searchTerm?}") { backStackEntry ->
+                composable(
+                    route = "${BottomNavItem.Examples.route}/{searchTerm}",
+                    arguments = listOf(navArgument("searchTerm") { type = NavType.StringType })
+                ) { backStackEntry ->
                     val searchTerm = backStackEntry.arguments?.getString("searchTerm")
                     ExamplesScreen(navController, searchTerm)
                 }
