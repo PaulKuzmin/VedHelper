@@ -22,10 +22,10 @@ import androidx.navigation.navArgument
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavigationBar
 import com.alternadv.vedhelper.ui.navigation.DrawerContent
-import com.alternadv.vedhelper.ui.screen.CarCalcScreen
 import com.alternadv.vedhelper.ui.screen.calc.CalcScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
+import com.alternadv.vedhelper.ui.screen.carcalc.CarCalcScreen
 import com.alternadv.vedhelper.ui.screen.examples.ExamplesScreen
 import com.alternadv.vedhelper.ui.screen.rois.RoisScreen
 import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
@@ -128,7 +128,7 @@ fun MainAppScreen() {
 
                 composable(BottomNavItem.Rois.route) { RoisScreen() }
 
-                composable(BottomNavItem.CarCalc.route) { CarCalcScreen(BottomNavItem.CarCalc.label) }
+                composable(BottomNavItem.CarCalc.route) { CarCalcScreen() }
             }
         }
 

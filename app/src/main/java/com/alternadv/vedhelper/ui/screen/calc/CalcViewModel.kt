@@ -137,7 +137,6 @@ class CalcViewModel : ViewModel() {
         _uiState.update {
             it.copy(chosenParams = it.chosenParams.copy(paramCost = value))
         }
-        // Не вызываем chosenTrigger — стоимость не влияет на параметры
     }
 
     fun onCalcParamChanged(code: String, value: String) {

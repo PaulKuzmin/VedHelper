@@ -10,7 +10,7 @@ data class CarCalcParamsModel(
     val calcEngines: List<CarCalcEngine>,
 
     @param:Json(name = "calc_engine")
-    val calcEngine: CarCalcEngine?
+    val calcEngine: String?
 )
 
 data class CarCalcParam(
