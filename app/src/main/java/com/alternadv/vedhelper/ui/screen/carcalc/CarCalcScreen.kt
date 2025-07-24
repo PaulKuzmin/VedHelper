@@ -13,14 +13,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.alternadv.vedhelper.model.VehicleTypes
 import com.alternadv.vedhelper.ui.components.CarCalcParamsInput
 import com.alternadv.vedhelper.ui.components.EnginePicker
 import com.alternadv.vedhelper.ui.components.MonthPicker
 import com.alternadv.vedhelper.ui.components.YearPicker
 import com.alternadv.vedhelper.ui.components.VehicleTypePicker
+import com.alternadv.vedhelper.ui.navigation.BottomNavItem
+import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultViewModel
 
 @Composable
-fun CarCalcScreen(viewModel: CarCalcViewModel = viewModel()) {
+fun CarCalcScreen(
+    navController: NavController,
+    carCalcResultViewModel: CarCalcResultViewModel,
+    viewModel: CarCalcViewModel = viewModel()
+) {
+
+    LaunchedEffect(Unit) {
+        viewModel.onCalcSuccess = { result ->
+            carCalcResultViewModel.setResult(result)
+            navController.navigate(BottomNavItem.CarCalcResult.route)
+        }
+    }
 
     val state by viewModel.uiState.collectAsState()
 
@@ -34,7 +49,7 @@ fun CarCalcScreen(viewModel: CarCalcViewModel = viewModel()) {
                     .verticalScroll(scrollState)
             ) {
                 VehicleTypePicker(
-                    vehicleTypes = state.vehicleTypes,
+                    vehicleTypes = VehicleTypes,
                     selected = state.vehicle,
                     onChange = viewModel::onVehicleTypeChanged
                 )

@@ -3,16 +3,22 @@ package com.alternadv.vedhelper.ui.screen.carcalc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CarCalcSource
+import com.alternadv.vedhelper.model.CarCalcResultModel
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.component1
 import kotlin.collections.component2
+import kotlin.collections.forEach
+import kotlin.collections.isNotEmpty
 import kotlin.collections.set
 import kotlin.text.toInt
 
 class CarCalcViewModel : ViewModel() {
+
+    var onCalcSuccess: ((CarCalcResultModel) -> Unit)? = null
 
     val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val years = (currentYear downTo currentYear - 20).toList()
@@ -94,7 +100,60 @@ class CarCalcViewModel : ViewModel() {
     }
 
     fun calcClick() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isCalculating = true, errorMessage = null) }
 
+            try {
+                val paramMap = _uiState.value.toParamMap()
+                val calcDeferred = async { CarCalcSource.getCalc(vehicle = _uiState.value.vehicle, paramMap) }
+                val result = calcDeferred.await()
+
+                _uiState.update { it.copy(isCalculating = false) }
+
+                if (result?.calculation?.u?.success != true || result.calculation.f?.success != true) {
+
+                    if (result?.calculation?.u?.messages?.isNotEmpty() == true || result?.calculation?.f?.messages?.isNotEmpty() == true) {
+                        val fErrorText = buildString {
+                            append("Ошибки при расчете на физ.лицо:\r\n")
+                            result.calculation.f?.messages?.forEach { msg ->
+                                append(msg.message).append("\r\n")
+                            }
+                        }
+
+                        val uErrorText = buildString {
+                            append("Ошибки при расчете на юр.лицо:\r\n")
+                            result.calculation.u?.messages?.forEach { msg ->
+                                append(msg.message).append("\r\n")
+                            }
+                        }
+
+                        _uiState.update {
+                            it.copy(
+                                isCalculating = false,
+                                errorMessage = fErrorText + "\r\n" + uErrorText
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isCalculating = false,
+                                errorMessage = "Неизвестная ошибка при расчете"
+                            )
+                        }
+                    }
+                    return@launch
+                }
+
+                onCalcSuccess?.invoke(result)
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isCalculating = false,
+                        errorMessage = e.message ?: "Ошибка при расчете"
+                    )
+                }
+            }
+        }
     }
 
     fun dismissCalcError() {

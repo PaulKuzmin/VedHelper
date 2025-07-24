@@ -26,6 +26,8 @@ import com.alternadv.vedhelper.ui.screen.calc.CalcScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultScreen
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
 import com.alternadv.vedhelper.ui.screen.carcalc.CarCalcScreen
+import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultScreen
+import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultViewModel
 import com.alternadv.vedhelper.ui.screen.examples.ExamplesScreen
 import com.alternadv.vedhelper.ui.screen.rois.RoisScreen
 import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
@@ -61,6 +63,7 @@ fun MainAppScreen() {
     }
 
     val calcResultViewModel: CalcResultViewModel = viewModel()
+    val carCalcResultViewModel: CarCalcResultViewModel = viewModel()
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -128,7 +131,8 @@ fun MainAppScreen() {
 
                 composable(BottomNavItem.Rois.route) { RoisScreen() }
 
-                composable(BottomNavItem.CarCalc.route) { CarCalcScreen() }
+                composable(BottomNavItem.CarCalc.route) { CarCalcScreen(navController, carCalcResultViewModel) }
+                composable(BottomNavItem.CarCalcResult.route ) { CarCalcResultScreen(carCalcResultViewModel) }
             }
         }
 

@@ -21,6 +21,12 @@ sealed class BottomNavItem(
         label = "Авто"
     )
 
+    object CarCalcResult : BottomNavItem(
+        route = "carcalcresult",
+        icon = Icons.Default.DirectionsCar,
+        label = "Результаты расчета"
+    )
+
     object Examples : BottomNavItem(
         route = "examples",
         icon = Icons.Default.Description,
