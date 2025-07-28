@@ -104,13 +104,18 @@ fun MainAppScreen() {
                 composable(BottomNavItem.Tnved.route) { TnvedScreen(navController) }
                 composable(
                     "${BottomNavItem.TnvedCode.route}/{code}",
-                    arguments = listOf(navArgument("code") { defaultValue = ""; nullable = false}
-                )) { backStackEntry ->
+                    arguments = listOf(navArgument("code") { defaultValue = ""; nullable = false }
+                    )) { backStackEntry ->
                     val code = backStackEntry.arguments?.getString("code") ?: ""
                     TnvedCodeScreen(code = code, navController = navController)
                 }
 
-                composable(BottomNavItem.Calc.route) { CalcScreen(navController, calcResultViewModel) }
+                composable(BottomNavItem.Calc.route) {
+                    CalcScreen(
+                        navController,
+                        calcResultViewModel
+                    )
+                }
                 composable(
                     route = "${BottomNavItem.Calc.route}/{code}",
                     arguments = listOf(navArgument("code") { type = NavType.StringType })
@@ -131,8 +136,17 @@ fun MainAppScreen() {
 
                 composable(BottomNavItem.Rois.route) { RoisScreen() }
 
-                composable(BottomNavItem.CarCalc.route) { CarCalcScreen(navController, carCalcResultViewModel) }
-                composable(BottomNavItem.CarCalcResult.route ) { CarCalcResultScreen(carCalcResultViewModel) }
+                composable(BottomNavItem.CarCalc.route) {
+                    CarCalcScreen(
+                        navController,
+                        carCalcResultViewModel
+                    )
+                }
+                composable(BottomNavItem.CarCalcResult.route) {
+                    CarCalcResultScreen(
+                        carCalcResultViewModel
+                    )
+                }
             }
         }
 
