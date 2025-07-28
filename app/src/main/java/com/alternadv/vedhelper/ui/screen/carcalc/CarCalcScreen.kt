@@ -29,7 +29,6 @@ fun CarCalcScreen(
     carCalcResultViewModel: CarCalcResultViewModel,
     viewModel: CarCalcViewModel = viewModel()
 ) {
-
     LaunchedEffect(Unit) {
         viewModel.onCalcSuccess = { result ->
             carCalcResultViewModel.setResult(result)
