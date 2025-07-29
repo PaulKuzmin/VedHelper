@@ -45,3 +45,11 @@ jobs:
         with:
           name: app-release.aab
           path: app/build/outputs/bundle/release/app-release.aab
+
+      - name: Upload to RuStore
+        run: |
+          chmod +x ./rustore-deploy.sh
+          ./rustore-deploy.sh
+        env:
+          RS_KEY_ID: ${{ secrets.RS_KEY_ID }}
+          RS_PRIVATE_KEY: ${{ secrets.RS_PRIVATE_KEY }}
