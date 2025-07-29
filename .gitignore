@@ -45,3 +45,5 @@ Thumbs.db
 app/keystore
 app/release
 release-key.jks
+# Разрешаем gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.jar
