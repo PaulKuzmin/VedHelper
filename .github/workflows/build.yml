@@ -1,0 +1,44 @@
+name: Build Android Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 1. Декодируем keystore
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > release-key.jks
+
+      # 2. Прокидываем переменные в среду
+      - name: Export signing env
+        run: |
+          echo "MYAPP_KEYSTORE=$PWD/release-key.jks" >> $GITHUB_ENV
+          echo "MYAPP_KEYSTORE_PASSWORD=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "MYAPP_KEY_ALIAS=${{ secrets.KEYSTORE_KEY_ALIAS }}" >> $GITHUB_ENV
+
+      # 3. Сборка релизного bundle
+      - name: Build Release
+        run: ./gradlew bundleRelease --stacktrace
+
+      # 4. Загружаем артефакт
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release.aab
+          path: app/build/outputs/bundle/release/app-release.aab

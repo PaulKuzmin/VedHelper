@@ -41,3 +41,7 @@ Thumbs.db
 # =============== Other ===============
 /.navigation.json
 /captures
+/keystore
+app/keystore
+app/release
+release-key.jks
