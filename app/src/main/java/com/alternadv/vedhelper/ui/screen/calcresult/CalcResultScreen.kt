@@ -73,7 +73,7 @@ fun CalcResultScreen(
                 }
             }
         }
-
+/*
         item {
             Card(modifier = Modifier.padding(vertical = 16.dp)) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -103,6 +103,7 @@ fun CalcResultScreen(
                 Text("Отправить запрос")
             }
         }
+ */
     }
 
     rateHint?.let { (title, rate) ->

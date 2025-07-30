@@ -34,7 +34,11 @@ fun TnvedScreen(
         viewModel.loadNodes()
     }
 
-    Box(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 3.dp)
+    ) {
         when {
             state.isLoading -> {
                 CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))

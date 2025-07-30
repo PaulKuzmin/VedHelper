@@ -56,4 +56,10 @@ sealed class BottomNavItem(
         icon = Icons.Default.Calculate,
         label = "Результаты расчета"
     )
+
+    object Contacts : BottomNavItem(
+        route = "contacts",
+        icon = Icons.Default.Contacts,
+        label = "Контакты"
+    )
 }

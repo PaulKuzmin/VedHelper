@@ -8,6 +8,7 @@ import androidx.navigation.NavDestination
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
+import com.alternadv.vedhelper.ui.navigateSingleTopTo
 
 @Composable
 fun BottomNavigationBar(
@@ -20,18 +21,12 @@ fun BottomNavigationBar(
         val currentDestination = navBackStackEntry?.destination
 
         items.forEach { item ->
-            val selected = currentDestination.isInHierarchy(item.route)
+            val selected = currentDestination.isInHierarchyOrChild(item.route)
             NavigationBarItem(
                 selected = selected,
                 onClick = {
                     if (!selected) {
-                        navController.navigate(item.route) {
-                            popUpTo(navController.graph.startDestinationId) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
+                        navController.navigateSingleTopTo(item.route)
                     }
                 },
                 icon = { Icon(item.icon, contentDescription = item.label) },
@@ -41,7 +36,8 @@ fun BottomNavigationBar(
     }
 }
 
-// Утилита: определяем, активен ли пункт меню
-private fun NavDestination?.isInHierarchy(route: String): Boolean {
-    return this?.hierarchy?.any { it.route == route } == true
+private fun NavDestination?.isInHierarchyOrChild(route: String): Boolean {
+    return this?.hierarchy?.any { destination ->
+        destination.route == route || destination.route?.startsWith("$route/") == true
+    } == true
 }

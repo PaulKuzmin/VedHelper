@@ -88,7 +88,7 @@ fun CarCalcResultScreen(
                     Text("Дорого?\nОтправьте запрос и получите индивидуальный расчет!")
                 }
             }
-
+/*
             Button(
                 onClick = {
                     //onRequestClick(buildMessage(data))
@@ -99,6 +99,7 @@ fun CarCalcResultScreen(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text("Отправить запрос")
             }
+ */
         }
     } ?: run {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {

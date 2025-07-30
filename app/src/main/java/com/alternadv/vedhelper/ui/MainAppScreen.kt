@@ -1,8 +1,11 @@
 package com.alternadv.vedhelper.ui
 
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.material3.DrawerValue
@@ -12,9 +15,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -30,6 +35,7 @@ import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
 import com.alternadv.vedhelper.ui.screen.carcalc.CarCalcScreen
 import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultScreen
 import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultViewModel
+import com.alternadv.vedhelper.ui.screen.contacts.ContactsScreen
 import com.alternadv.vedhelper.ui.screen.examples.ExamplesScreen
 import com.alternadv.vedhelper.ui.screen.rois.RoisScreen
 import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
@@ -73,17 +79,27 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         BottomNavItem.Rois
     )
 
+    val backOnlyScreens = listOf(
+        BottomNavItem.CalcResult.route,
+        BottomNavItem.CarCalcResult.route,
+        BottomNavItem.TnvedCode.route,
+        BottomNavItem.Contacts.route
+    )
+
     val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route.orEmpty()
+    val rawRoute = navBackStackEntry?.destination?.route.orEmpty()
+    val currentRoute = getBottomSelectedRoute(rawRoute)
 
     val title = when (currentRoute) {
         BottomNavItem.Calc.route -> "Калькулятор товаров"
         BottomNavItem.CalcResult.route -> "Результаты расчета"
         BottomNavItem.CarCalc.route -> "Калькулятор авто"
+        BottomNavItem.CarCalcResult.route -> "Результаты расчета"
         BottomNavItem.Examples.route -> "Примеры"
         BottomNavItem.Tnved.route -> "ТН ВЭД"
         BottomNavItem.TnvedCode.route -> "Код ТН ВЭД"
         BottomNavItem.Rois.route -> "РОИС"
+        BottomNavItem.Contacts.route -> "Контакты"
         else -> "Помощник ВЭД"
     }
 
@@ -93,12 +109,19 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            DrawerContent(onNavigate = { route ->
-                coroutineScope.launch {
-                    drawerState.close()
-                    navController.navigate(route)
-                }
-            })
+            Surface(
+                modifier = Modifier.width(250.dp)
+            ) {
+                DrawerContent(
+                    currentRoute = rawRoute,
+                    onNavigate = { route ->
+                        coroutineScope.launch {
+                            drawerState.close()
+                            navController.navigateSingleTopTo(route)
+                        }
+                    }
+                )
+            }
         }
     ) {
         Scaffold(
@@ -106,19 +129,32 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
                 TopAppBar(
                     title = { Text(title) },
                     navigationIcon = {
-                        IconButton(onClick = {
-                            coroutineScope.launch { drawerState.open() }
-                        }) {
-                            Icon(Icons.Default.Menu, contentDescription = "Открыть меню")
+                        if (currentRoute in backOnlyScreens) {
+                            // только кнопка назад
+                            IconButton(onClick = { navController.popBackStack() }) {
+                                Icon(
+                                    Icons.Filled.ChevronLeft,
+                                    contentDescription = "Назад"
+                                )
+                            }
+                        } else {
+                            // меню
+                            IconButton(onClick = {
+                                coroutineScope.launch { drawerState.open() }
+                            }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Открыть меню")
+                            }
                         }
                     }
                 )
             },
             bottomBar = {
-                BottomNavigationBar(
-                    navController = navController,
-                    items = bottomItems
-                )
+                if (currentRoute !in backOnlyScreens) {
+                    BottomNavigationBar(
+                        navController = navController,
+                        items = bottomItems
+                    )
+                }
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { innerPadding ->
@@ -127,6 +163,7 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
                 startDestination = BottomNavItem.Calc.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
+                composable(BottomNavItem.Contacts.route) { ContactsScreen() }
                 composable(BottomNavItem.Tnved.route) { TnvedScreen(navController) }
                 composable(
                     "${BottomNavItem.TnvedCode.route}/{code}",
@@ -179,5 +216,26 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         BackHandler(enabled = drawerState.isOpen) {
             coroutineScope.launch { drawerState.close() }
         }
+    }
+}
+
+private fun getBottomSelectedRoute(currentRoute: String): String {
+    return when {
+        currentRoute.startsWith("${BottomNavItem.Examples.route}/") -> BottomNavItem.Examples.route
+        currentRoute.startsWith("${BottomNavItem.Calc.route}/") -> BottomNavItem.Calc.route
+        currentRoute.startsWith("${BottomNavItem.TnvedCode.route}/") -> BottomNavItem.TnvedCode.route
+        else -> currentRoute
+    }
+}
+
+
+fun NavHostController.navigateSingleTopTo(route: String) {
+    this.navigate(route) {
+        // используем currentBackStackEntry?.destination?.parent?.findStartDestination()
+        popUpTo(this@navigateSingleTopTo.graph.findStartDestination().id) { // <-- ключ
+            saveState = true
+        }
+        launchSingleTop = true
+        restoreState = true
     }
 }

@@ -31,7 +31,11 @@ fun ExamplesScreen(
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 16.dp, vertical = 3.dp)
+    ) {
         OutlinedTextField(
             value = state.searchTerm,
             onValueChange = viewModel::onSearchInput,

@@ -44,13 +44,14 @@ fun CarCalcScreen(
         topBar = {
             Column(
                 modifier = Modifier
-                    .padding(16.dp)
-                    .verticalScroll(scrollState)
+                    .padding(horizontal = 16.dp, vertical = 3.dp)
+                    .verticalScroll(scrollState),
+                verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 VehicleTypePicker(
                     vehicleTypes = VehicleTypes,
                     selected = state.vehicle,
-                    onChange = viewModel::onVehicleTypeChanged
+                    onChange = viewModel::onVehicleTypeChanged,
                 )
                 MonthPicker(
                     months = state.months,
@@ -103,7 +104,7 @@ fun CarCalcScreen(
         Column(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(16.dp, 5.dp)
                 .verticalScroll(scrollState)
         ) {
             if (state.isLoading) {

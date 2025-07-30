@@ -85,6 +85,7 @@ dependencies {
 
     implementation(platform("ru.rustore.sdk:bom:2025.02.01"))
     implementation("ru.rustore.sdk:appupdate")
+    implementation(libs.androidx.core.splashscreen)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

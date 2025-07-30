@@ -21,6 +21,6 @@ fun CarCalcParamsInput(param: CarCalcParam, value: Double?, onChange: (String, S
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp)
+            .padding(vertical = 5.dp)
     )
 }

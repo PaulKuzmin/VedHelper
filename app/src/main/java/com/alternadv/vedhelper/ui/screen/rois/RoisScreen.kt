@@ -18,7 +18,10 @@ import com.alternadv.vedhelper.model.OisModel
 fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
     val state by viewModel.uiState.collectAsState()
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 3.dp)
+    ) {
         OutlinedTextField(
             value = TextFieldValue(state.searchTerm),
             onValueChange = { viewModel.onSearchInput(it.text) },
