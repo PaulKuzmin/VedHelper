@@ -45,7 +45,10 @@ fun TnvedCodeScreen(
 
     Scaffold(
         bottomBar = {
-            Row(modifier = Modifier.fillMaxWidth().padding(8.dp)) {
+            Row(modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+            ) {
                 Button(
                     modifier = Modifier.weight(1f).padding(end = 4.dp),
                     onClick = {
@@ -78,7 +81,7 @@ fun TnvedCodeScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(innerPadding)
-                .padding(16.dp)
+                .padding(16.dp, 5.dp)
         ) {
             item {
                 if (state.isLoading) {
