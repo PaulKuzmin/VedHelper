@@ -17,7 +17,6 @@ fun RateSection(title: String, rate: CalcRateModel) {
             .padding(vertical = 8.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            // Заголовок из Ionic: data.name
             Text(
                 text = rate.name ?: title,
                 style = MaterialTheme.typography.titleMedium
@@ -26,15 +25,25 @@ fun RateSection(title: String, rate: CalcRateModel) {
 
             rate.data.forEach { row ->
                 Column(modifier = Modifier.padding(bottom = 12.dp)) {
-                    // Ставка (rate_string)
+
+                    var rate = "-"
+                    if (!row.rateString.isNullOrBlank()) {
+                        rate = row.rateString
+                    }
+
                     Text(
-                        text = row.rateString ?: "-",
+                        text = rate,
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
-                    // Описание (description или "Базовая ставка")
+                    val description: String = if (row.description.isNullOrBlank()) {
+                        "базовая ставка"
+                    } else {
+                        row.description
+                    }
+
                     Text(
-                        text = row.description ?: "Базовая ставка",
+                        text = description,
                         style = MaterialTheme.typography.bodyMedium
                     )
                 }

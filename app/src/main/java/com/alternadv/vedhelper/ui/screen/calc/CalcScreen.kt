@@ -6,6 +6,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Calculate
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -54,7 +55,7 @@ fun CalcScreen(
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 3.dp)
+                    .padding(horizontal = 16.dp, vertical = 5.dp)
             )
         },
         bottomBar = {
@@ -129,21 +130,30 @@ fun CalcScreen(
 
 @Composable
 private fun HintCard(navController: NavController) {
-    Column(modifier = Modifier.padding(top = 5.dp)) {
-        Card(modifier = Modifier.padding(top = 5.dp)) {
+    Column {
+        Card {
             Column(Modifier.padding(16.dp)) {
-                Text("Не нашли или не знаете код?")
-                Text("Воспользуйтесь справочником или примерами.")
+                Text("Не нашли или не знаете код?", style = MaterialTheme.typography.bodyMedium)
+                Text("Воспользуйтесь справочником или примерами.", style = MaterialTheme.typography.bodyMedium)
+                Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceEvenly
                 ) {
                     Button(onClick = {
                         navController.navigate(BottomNavItem.Tnved.route)
-                    }) { Text("ТН ВЭД") }
+                    }) {
+                        Icon(BottomNavItem.Tnved.icon, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(BottomNavItem.Tnved.label)
+                    }
                     Button(onClick = {
                         navController.navigate(BottomNavItem.Examples.route)
-                    }) { Text("Примеры") }
+                    }) {
+                        Icon(BottomNavItem.Examples.icon, contentDescription = null)
+                        Spacer(Modifier.width(8.dp))
+                        Text(BottomNavItem.Examples.label)
+                    }
                 }
             }
         }
@@ -151,7 +161,7 @@ private fun HintCard(navController: NavController) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 8.dp)
+                .padding(top = 10.dp)
         ) {
             Column(
                 modifier = Modifier

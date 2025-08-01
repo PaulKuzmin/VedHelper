@@ -70,4 +70,10 @@ class ExamplesViewModel : ViewModel() {
             }
         }
     }
+
+    fun initIfNeeded() {
+        if (_uiState.value.items.isEmpty() && _uiState.value.searchTerm.isNotBlank()) {
+            fetchExamples(_uiState.value.searchTerm)
+        }
+    }
 }

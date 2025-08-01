@@ -1,9 +1,9 @@
 package com.alternadv.vedhelper.ui.screen.tnvedcode
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -45,18 +45,19 @@ fun TnvedCodeScreen(
 
     Scaffold(
         bottomBar = {
-            Row(modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             ) {
                 Button(
-                    modifier = Modifier.weight(1f).padding(end = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(end = 4.dp),
                     onClick = {
                         val searchCode = if (code.indexOf('_') > 8) {
                             code.substring(0, code.indexOf('_'))
-                        } else {
-                            code
-                        }
+                        } else code
                         navController.navigate(BottomNavItem.Examples.route + "/$searchCode")
                     }
                 ) {
@@ -66,7 +67,9 @@ fun TnvedCodeScreen(
                 }
 
                 Button(
-                    modifier = Modifier.weight(1f).padding(start = 4.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 4.dp),
                     onClick = {
                         navController.navigate(BottomNavItem.Calc.route + "/${code}")
                     }
@@ -78,43 +81,77 @@ fun TnvedCodeScreen(
             }
         }
     ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp, 5.dp)
-        ) {
-            item {
-                if (state.isLoading) {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator()
-                    }
-                } else if (state.codeData != null) {
-                    val data = state.codeData
+
+        when {
+            state.isLoading -> Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 32.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+
+            state.codeData != null -> {
+                val data = state.codeData
+
+                Column(
+                    modifier = Modifier
+                        .padding(
+                            start = 16.dp,
+                            end = 16.dp,
+                            top = 0.dp,
+                            bottom = innerPadding.calculateBottomPadding()
+                        )
+                ) {
+                    // --- Фиксированный блок ---
                     Text(text = "${data?.code}", style = MaterialTheme.typography.titleLarge)
                     Spacer(Modifier.height(4.dp))
                     Text(text = "${data?.name}", style = MaterialTheme.typography.bodyLarge)
                     Spacer(Modifier.height(16.dp))
 
-                    data?.data?.importTax?.let { RateSection("Ввозная пошлина", it) }
-                    data?.data?.exportTax?.let { RateSection("Вывозная пошлина", it) }
-                    data?.data?.vat?.let { RateSection("НДС", it) }
-                    data?.data?.excise?.let { RateSection("Акциз", it) }
-                    data?.data?.special?.let { RateSection("Особая пошлина", it) }
+                    // --- Прокручиваемая часть ---
+                    LazyColumn {
+                        data?.data?.importTax?.let {
+                            item { RateSection("Ввозная пошлина", it) }
+                        }
+                        data?.data?.exportTax?.let {
+                            item { RateSection("Вывозная пошлина", it) }
+                        }
+                        data?.data?.vat?.let {
+                            item { RateSection("НДС", it) }
+                        }
+                        data?.data?.excise?.let {
+                            item { RateSection("Акциз", it) }
+                        }
+                        data?.data?.special?.let {
+                            item { RateSection("Особая пошлина", it) }
+                        }
 
-                    if (data?.data?.documents != null) {
-                        Spacer(Modifier.height(16.dp))
-                        Text("Документы и особенности", style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(8.dp))
-
-                        data.data.documents.restrictions?.let { DocumentSection(it) }
-                        data.data.documents.license?.let { DocumentSection(it) }
-                        data.data.documents.certificates?.let { DocumentSection(it) }
-                        data.data.documents.others?.let { DocumentSection(it) }
+                        if (data?.data?.documents != null) {
+                            item {
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    "Документы и особенности",
+                                    style = MaterialTheme.typography.titleMedium
+                                )
+                                Spacer(Modifier.height(8.dp))
+                                data.data.documents.restrictions?.let { DocumentSection(it) }
+                                data.data.documents.license?.let { DocumentSection(it) }
+                                data.data.documents.certificates?.let { DocumentSection(it) }
+                                data.data.documents.others?.let { DocumentSection(it) }
+                            }
+                        }
                     }
-                } else if (state.errorMessage != null) {
-                    Text(text = state.errorMessage!!, color = MaterialTheme.colorScheme.error)
                 }
             }
+
+            state.errorMessage != null -> Text(
+                text = state.errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
         }
     }
 }
+

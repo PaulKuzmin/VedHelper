@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
@@ -42,6 +43,7 @@ import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
 import com.alternadv.vedhelper.ui.screen.tnvedcode.TnvedCodeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Preview
 @Composable
 fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
     val navController = rememberNavController()
