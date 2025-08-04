@@ -1,28 +1,27 @@
 package com.alternadv.vedhelper.ui.components
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.MenuAnchorType
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownSelector(
-    label: String,
-    options: List<Pair<String, String>>,
+fun CurrencyPicker(
     selected: String,
-    onSelect: (String) -> Unit,
+    onChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val currencies = listOf(
+        "840" to "Доллар США",
+        "156" to "Юань",
+        "978" to "Евро",
+        "392" to "Йена",
+        "410" to "Вон"
+    )
+
     var expanded by remember { mutableStateOf(false) }
-    val selectedText = options.find { it.first == selected }?.second ?: ""
+    val selectedName = currencies.find { it.first == selected }?.second ?: "Выберите валюту"
 
     ExposedDropdownMenuBox(
         expanded = expanded,
@@ -30,24 +29,25 @@ fun DropdownSelector(
         modifier = modifier
     ) {
         OutlinedTextField(
-            value = selectedText,
+            value = selectedName,
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
+            label = { Text("Валюта") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
             modifier = Modifier
-                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
                 .fillMaxWidth()
-                .padding(vertical = 5.dp)
+                .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
         )
+
         ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            options.forEach { (value, labelText) ->
+            currencies.forEach { (code, name) ->
                 DropdownMenuItem(
-                    text = { Text(labelText) },
+                    text = { Text(name) },
                     onClick = {
-                        onSelect(value)
+                        onChange(code)
                         expanded = false
                     }
                 )

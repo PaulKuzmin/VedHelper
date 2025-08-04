@@ -6,8 +6,8 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Calculate
-import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,6 +17,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alternadv.vedhelper.ui.components.CalcParamsInput
 import com.alternadv.vedhelper.ui.components.CountryPicker
+import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.DirectionPicker
 import com.alternadv.vedhelper.ui.components.DropdownSelector
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
@@ -180,79 +181,96 @@ private fun HintCard(navController: NavController) {
 
 @Composable
 private fun CalcContent(state: CalcState, viewModel: CalcViewModel) {
+    // Заголовок расчёта
     Text(
-        state.params?.name ?: "",
-        style = MaterialTheme.typography.titleMedium,
+        state.params?.name.orEmpty(),
+        style = MaterialTheme.typography.titleLarge,
         modifier = Modifier.padding(vertical = 8.dp)
     )
 
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp)) {
-            DirectionPicker(state.chosenParams.direction, viewModel::onDirectionSelected)
-            CountryPicker(
-                state.availableCountries,
-                state.chosenParams.country,
-                viewModel::onCountrySelected
-            )
+    // Направление и страна
+    DirectionPicker(state.chosenParams.direction, viewModel::onDirectionSelected)
+    CountryPicker(
+        state.availableCountries,
+        state.chosenParams.country,
+        viewModel::onCountrySelected
+    )
 
-            OutlinedTextField(
-                value = state.chosenParams.paramCost?.toString() ?: "",
-                onValueChange = viewModel::onCostChanged,
-                label = { Text("Стоимость (USD)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+    // Стоимость + Валюта на одной строке
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        OutlinedTextField(
+            value = state.cost?.let { String.format("%.0f", it) } ?: "",
+            onValueChange = viewModel::onCostChanged,
+            label = { Text("Стоимость") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.weight(1f)
+        )
 
-            state.calcParams.forEach { param ->
-                val paramValue = state.chosenParams.addons?.get(param.code)
-                CalcParamsInput(param, paramValue, viewModel::onCalcParamChanged)
-            }
+        CurrencyPicker(
+            selected = state.currency,
+            onChange = viewModel::onCurrencySelected,
+            modifier = Modifier.weight(1f)
+        )
+    }
 
-            if (state.specialParams.count() > 0) {
-                Text(
-                    "Особые условия расчета",
-                    style = MaterialTheme.typography.titleMedium,
-                    modifier = Modifier.padding(top = 16.dp)
-                )
+    // Дополнительные параметры
+    state.calcParams.forEach { param ->
+        val paramValue = state.chosenParams.addons?.get(param.code)
+        CalcParamsInput(param, paramValue, viewModel::onCalcParamChanged)
+    }
 
-                val groupedSpecials = state.specialParams
-                    .groupBy { it.typeName }
+    // Особые условия
+    if (state.specialParams.isNotEmpty()) {
+        Text(
+            "Особые условия расчета",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+        )
 
-                val currentSpecials = state.chosenParams.specials.orEmpty()
+        val groupedSpecials = state.specialParams.groupBy { it.typeName }
+        val currentSpecials = state.chosenParams.specials.orEmpty()
 
-                groupedSpecials.forEach { (typeName, items) ->
-                    val selectedId = currentSpecials[items.first().type] ?: ""
-                    val options = items.map { it.id to it.name }
+        groupedSpecials.forEach { (typeName, items) ->
+            val selectedId = currentSpecials[items.first().type] ?: ""
+            val options = items.map { it.id to it.name }
 
-                    DropdownSelector(
-                        label = typeName,
-                        options = options,
-                        selected = selectedId,
-                        onSelect = { selectedId ->
-                            // вызываем метод VM
-                            viewModel.onSpecialChanged(type = items.first().type, id = selectedId)
-                        }
-                    )
+            DropdownSelector(
+                label = typeName,
+                options = options,
+                selected = selectedId,
+                onSelect = { selected ->
+                    viewModel.onSpecialChanged(type = items.first().type, id = selected)
                 }
-
-            }
+            )
         }
     }
 
+    // Среднеконтрактные цены (без Card)
     state.statsPrice?.let { stats ->
         if (stats.average != "0.00") {
+
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 16.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+
             Text(
                 "Среднеконтрактные цены, $/кг",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(top = 16.dp)
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
             )
-            Card(modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.padding(16.dp)) {
-                    Text("Минимум: ${stats.minimum}")
-                    Text("Средняя: ${stats.average}")
-                    Text("Максимум: ${stats.maximum}")
-                    Text("* Данные за полгода", style = MaterialTheme.typography.bodySmall)
-                }
+
+            Column(Modifier.padding(start = 8.dp)) {
+                Text("Минимум: ${stats.minimum}", style = MaterialTheme.typography.titleMedium)
+                Text("Средняя: ${stats.average}", style = MaterialTheme.typography.titleMedium)
+                Text("Максимум: ${stats.maximum}", style = MaterialTheme.typography.titleMedium)
+                Text("* Данные за полгода", style = MaterialTheme.typography.bodySmall)
             }
         }
     }

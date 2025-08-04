@@ -4,11 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CarCalcSource
 import com.alternadv.vedhelper.model.CarCalcResultModel
+import com.alternadv.vedhelper.utils.CurrencyConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 import kotlin.collections.component1
 import kotlin.collections.component2
 import kotlin.collections.forEach
@@ -71,10 +73,16 @@ class CarCalcViewModel : ViewModel() {
         }
     }
 
-    fun onCostChanged(v: String) {
+    fun onCurrencyChanged(v: String) {
+        _uiState.update {
+            it.copy(currency = v)
+        }
+    }
+
+    fun onRawCostChanged(v: String) {
         val value = v.toDoubleOrNull()
         _uiState.update {
-            it.copy(cost = value)
+            it.copy(rawCost = value)
         }
     }
 
@@ -104,6 +112,16 @@ class CarCalcViewModel : ViewModel() {
             _uiState.update { it.copy(isCalculating = true, errorMessage = null) }
 
             try {
+
+                val usdCost = CurrencyConverter.convertToUsd(
+                    _uiState.value.rawCost ?: 0.0,
+                    _uiState.value.currency
+                )
+
+                _uiState.update {
+                    it.copy(cost = usdCost)
+                }
+
                 val paramMap = _uiState.value.toParamMap()
                 val calcDeferred = async { CarCalcSource.getCalc(vehicle = _uiState.value.vehicle, paramMap) }
                 val result = calcDeferred.await()
@@ -163,9 +181,11 @@ class CarCalcViewModel : ViewModel() {
     fun CarCalcState.toParamMap(): Map<String, String> {
         val map = mutableMapOf<String, String>()
         map["vehicle"] = vehicle
-        cost?.let { map["cost"] = it.toString() }
+        cost?.let { map["cost"] = String.format(Locale.US, "%.4f", it) }
         map["engine"] = engine ?: ""
-        chosenParams.forEach { (key, value) -> map[key] = value.toString() }
+        chosenParams.forEach { (key, value) ->
+            map[key] = value.toInt().toString() // <-- ключевое изменение
+        }
         map["month"] = month.toString()
         map["year"] = year.toString()
         map["json"] = "1"

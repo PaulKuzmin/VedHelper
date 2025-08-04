@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.alternadv.vedhelper.model.VehicleTypes
 import com.alternadv.vedhelper.ui.components.CarCalcParamsInput
+import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.EnginePicker
 import com.alternadv.vedhelper.ui.components.MonthPicker
 import com.alternadv.vedhelper.ui.components.YearPicker
@@ -53,23 +54,37 @@ fun CarCalcScreen(
                     selected = state.vehicle,
                     onChange = viewModel::onVehicleTypeChanged,
                 )
-                MonthPicker(
-                    months = state.months,
-                    selected = state.month.toString(),
-                    onChange = viewModel::onMonthChanged
-                )
-                YearPicker(
-                    years = viewModel.years,
-                    selected = state.year.toString(),
-                    onChange = viewModel::onYearChanged
-                )
-                OutlinedTextField(
-                    value = state.cost?.toString() ?: "",
-                    onValueChange = viewModel::onCostChanged,
-                    label = { Text("Стоимость (USD)") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                // --- Месяц и год в одной строке ---
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    MonthPicker(
+                        months = state.months,
+                        selected = state.month.toString(),
+                        onChange = viewModel::onMonthChanged,
+                        modifier = Modifier.weight(1f)
+                    )
+                    YearPicker(
+                        years = viewModel.years,
+                        selected = state.year.toString(),
+                        onChange = viewModel::onYearChanged,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                // --- Стоимость и валюта в одной строке ---
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedTextField(
+                        value = state.rawCost?.let { String.format("%.0f", it) } ?: "",
+                        onValueChange = viewModel::onRawCostChanged,
+                        label = { Text("Стоимость") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        modifier = Modifier.weight(1f)
+                    )
+                    CurrencyPicker(
+                        selected = state.currency,
+                        onChange = viewModel::onCurrencyChanged,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         },
         bottomBar = {

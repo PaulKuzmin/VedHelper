@@ -110,12 +110,16 @@ fun CarCalcResultScreen(
 
 @Composable
 private fun SegmentedButton(selected: Boolean, text: String, onClick: () -> Unit) {
-    Button(
+    OutlinedButton(
         onClick = onClick,
-        colors = ButtonDefaults.buttonColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
-        )
-    ) { Text(text) }
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+        ),
+        border = if (selected) null else ButtonDefaults.outlinedButtonBorder
+    ) {
+        Text(text)
+    }
 }
 
 @Composable

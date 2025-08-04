@@ -21,6 +21,8 @@ data class CalcState(
     ),
     val availableCountries: List<CountryModel> = emptyList(),
     val params: CalcMeta? = null,
+    var cost: Double?,
+    var currency: String = "840",
     val calcParams: List<CalcParam> = emptyList(),
     val specialParams: List<CalcSpecialParam> = emptyList(),
     val statsPrice: StatsPrice? = null,

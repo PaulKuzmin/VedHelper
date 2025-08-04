@@ -12,10 +12,19 @@ import androidx.compose.ui.unit.dp
 import com.alternadv.vedhelper.model.CarCalcParam
 
 @Composable
-fun CarCalcParamsInput(param: CarCalcParam, value: Double?, onChange: (String, String) -> Unit) {
+fun CarCalcParamsInput(
+    param: CarCalcParam,
+    value: Double?,
+    onChange: (String, String) -> Unit
+) {
     OutlinedTextField(
-        value = value?.toString() ?: "",
-        onValueChange = { onChange(param.code, it) },
+        value = value?.toInt()?.toString() ?: "",
+        onValueChange = { input ->
+            // Разрешаем только цифры
+            val filtered = input.filter { it.isDigit() }
+            // Просто передаём пустое или число
+            onChange(param.code, filtered)
+        },
         label = { Text(param.name) },
         placeholder = { Text(param.dimension) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

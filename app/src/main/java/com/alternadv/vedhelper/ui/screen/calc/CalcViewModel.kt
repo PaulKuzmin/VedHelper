@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CalcSource
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.Chosen
+import com.alternadv.vedhelper.utils.CurrencyConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class CalcViewModel : ViewModel() {
 
@@ -54,7 +56,8 @@ class CalcViewModel : ViewModel() {
             specialParams = emptyList(),
             statsPrice = null,
             isLoading = false,
-            errorMessage = null
+            errorMessage = null,
+            cost = null
         )
     )
     val uiState: StateFlow<CalcState> = _uiState
@@ -125,6 +128,12 @@ class CalcViewModel : ViewModel() {
         chosenChangedTrigger.tryEmit(Unit)
     }
 
+    fun onCurrencySelected(value: String) {
+        _uiState.update {
+            it.copy(currency = value)
+        }
+    }
+
     fun onCountrySelected(code: String) {
         _uiState.update {
             it.copy(chosenParams = it.chosenParams.copy(country = code))
@@ -135,7 +144,8 @@ class CalcViewModel : ViewModel() {
     fun onCostChanged(input: String) {
         val value = input.toDoubleOrNull()
         _uiState.update {
-            it.copy(chosenParams = it.chosenParams.copy(paramCost = value))
+            //it.copy(chosenParams = it.chosenParams.copy(paramCost = value))
+            it.copy(cost = value)
         }
     }
 
@@ -172,7 +182,7 @@ class CalcViewModel : ViewModel() {
 
     fun calcClick() {
         val code = _uiState.value.searchTerm
-        val chosen = _uiState.value.chosenParams
+        //val chosen = _uiState.value.chosenParams
 
         if (code.isBlank()) {
             _uiState.update { it.copy(errorMessage = "Код ТН ВЭД не указан") }
@@ -183,7 +193,17 @@ class CalcViewModel : ViewModel() {
             _uiState.update { it.copy(isCalculating = true, errorMessage = null) }
 
             try {
-                val paramMap = chosen.toParamMap()
+
+                val usdCost = CurrencyConverter.convertToUsd(
+                    _uiState.value.cost ?: 0.0,
+                    _uiState.value.currency
+                )
+
+                _uiState.update {
+                    it.copy(chosenParams = it.chosenParams.copy(paramCost = usdCost))
+                }
+
+                val paramMap = _uiState.value.chosenParams.toParamMap()
                 val calcDeferred = async { CalcSource.getCalc(code, paramMap) }
                 val result = calcDeferred.await()
 
@@ -239,7 +259,7 @@ class CalcViewModel : ViewModel() {
         map["code"] = code
         map["direction"] = direction
         map["country"] = country
-        paramCost?.let { map["param_cost"] = it.toString() }
+        paramCost?.let { map["param_cost"] = String.format(Locale.US, "%.4f", it) }
         map["json"] = "1"
         specials?.forEach { (key, value) -> map["special_$key"] = value }
         addons?.forEach { (key, value) -> map["param_$key"] = value.toString() }

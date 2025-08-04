@@ -9,6 +9,8 @@ data class CarCalcState(
     val year: Int = 2025,
     val cost: Double? = null,
     var engine: String? = "f",
+    val rawCost: Double? = null,
+    val currency: String = "840",
 
     val calcParams: List<CarCalcParam> = emptyList(),
     val calcEngines: List<CarCalcEngine> = emptyList(),
