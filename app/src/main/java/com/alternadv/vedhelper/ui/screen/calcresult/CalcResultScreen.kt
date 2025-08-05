@@ -1,22 +1,32 @@
 package com.alternadv.vedhelper.ui.screen.calcresult
 
+import android.content.Intent
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CalcMessage
 import com.alternadv.vedhelper.model.CalcResultPaymentModel
+import com.alternadv.vedhelper.ui.navigation.BottomNavItem
+import com.alternadv.vedhelper.utils.PdfGenerator
+import com.alternadv.vedhelper.utils.buildReportRows
 import java.util.Locale
 
 @Composable
 fun CalcResultScreen(
     viewModel: CalcResultViewModel
 ) {
+    val params by viewModel.calcParams.collectAsState()
     val result by viewModel.calcResult.collectAsState()
+
     var selectedCurrency by remember { mutableStateOf("rubles") }
     var rateHint by remember { mutableStateOf<Pair<String, String>?>(null) }
 
@@ -73,37 +83,41 @@ fun CalcResultScreen(
                 }
             }
         }
-/*
-        item {
-            Card(modifier = Modifier.padding(vertical = 16.dp)) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Дорого?")
-                    Text("Отправьте запрос и получите индивидуальный расчет!")
-                }
-            }
-        }
 
         item {
+            val context = LocalContext.current
+
             Button(
                 onClick = {
-                    val msg = buildString {
-                        append("Здравствуйте! Рассчитайте, пожалуйста: ${chosen?.code}; ")
-                        append(
-                            if (chosen?.direction == "E") "направление перемещения: экспорт; "
-                            else "направление перемещения: импорт; "
-                        )
-                        if (!chosen?.country.isNullOrBlank() && chosen.country != "000")
-                            append("код страны: ${chosen.country}; ")
-                        append("стоимость, дол.США: ${chosen?.paramCost}")
+
+                    val (parametersData, resultsData) = buildReportRows(result)
+                    val reportFile = PdfGenerator.generateCalcResultPdf(
+                        context = context,
+                        outputPath = "Результаты_расчета_таможенной_пошлины_Альтерна.pdf",
+                        title = "Результаты расчета таможенной пошлины",
+                        parameters = parametersData,
+                        resultTitle = "При оформлении на юридическое лицо",
+                        results = resultsData
+                    )
+                    val uri = FileProvider.getUriForFile(
+                        context,
+                        "${context.packageName}.provider",
+                        reportFile
+                    )
+                    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                        type = "application/pdf"
+                        putExtra(Intent.EXTRA_STREAM, uri)
+                        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     }
-                    //
+                    context.startActivity(Intent.createChooser(shareIntent, "Поделиться расчетом"))
                 },
                 modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
             ) {
-                Text("Отправить запрос")
+                Icon(Icons.Default.Share, contentDescription = null)
+                Spacer(Modifier.width(8.dp))
+                Text("Поделиться расчетом")
             }
         }
- */
     }
 
     rateHint?.let { (title, rate) ->

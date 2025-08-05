@@ -101,8 +101,6 @@ fun CalcScreen(
                     CircularProgressIndicator()
                 }
             } else {
-
-
                 // Всё остальное рисуем, если не загрузка
                 if (state.isShowHint) {
                     HintCard(navController)

@@ -237,7 +237,8 @@ class CalcViewModel : ViewModel() {
                 }
 
                 onCalcSuccess?.invoke(result)
-                println("Результат: $result") // Временно
+
+
 
             } catch (e: Exception) {
                 _uiState.update {

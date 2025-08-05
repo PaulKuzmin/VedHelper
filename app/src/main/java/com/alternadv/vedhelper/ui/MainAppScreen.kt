@@ -43,7 +43,7 @@ import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
 import com.alternadv.vedhelper.ui.screen.tnvedcode.TnvedCodeScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+//@Preview
 @Composable
 fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
     val navController = rememberNavController()
