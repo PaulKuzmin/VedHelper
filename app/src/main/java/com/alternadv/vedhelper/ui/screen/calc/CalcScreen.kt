@@ -22,6 +22,7 @@ import com.alternadv.vedhelper.ui.components.DirectionPicker
 import com.alternadv.vedhelper.ui.components.DropdownSelector
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,8 +69,14 @@ fun CalcScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = { viewModel.calcClick() },
-                        enabled = !state.isCalculating,
+                        onClick = {
+                            if (viewModel.lastCalcParams != null) {
+                                calcResultViewModel.setParams(viewModel.lastCalcParams!!)
+                            }
+
+                            viewModel.calcClick()
+                        },
+                        enabled = !state.isCalculating && !state.isLoading,
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(Icons.Default.Calculate, contentDescription = null)
@@ -202,7 +209,7 @@ private fun CalcContent(state: CalcState, viewModel: CalcViewModel) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         OutlinedTextField(
-            value = state.cost?.let { String.format("%.0f", it) } ?: "",
+            value = state.cost?.let { String.format(Locale.US, "%.0f", it) } ?: "",
             onValueChange = viewModel::onCostChanged,
             label = { Text("Стоимость") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

@@ -3,6 +3,7 @@ package com.alternadv.vedhelper.ui.screen.calc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CalcSource
+import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.Chosen
 import com.alternadv.vedhelper.utils.CurrencyConverter
@@ -18,6 +19,7 @@ import java.util.Locale
 class CalcViewModel : ViewModel() {
 
     var onCalcSuccess: ((CalcResultModel) -> Unit)? = null
+    var lastCalcParams: CalcParamsModel? = null
 
     private val chosenChangedTrigger = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
 
@@ -83,6 +85,7 @@ class CalcViewModel : ViewModel() {
                 val statsDeferred = async { CalcSource.getStats(code, paramMap) }
 
                 val response = paramsDeferred.await()
+                lastCalcParams = response
                 val stats = statsDeferred.await()
 
                 val countries = response?.countries ?: emptyList()

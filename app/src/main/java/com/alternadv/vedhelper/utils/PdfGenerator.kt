@@ -1,6 +1,7 @@
 package com.alternadv.vedhelper.utils
 
 import android.content.Context
+import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.model.CarReportRows
@@ -82,7 +83,8 @@ object PdfGenerator {
 
         logo.setHorizontalAlignment(HorizontalAlignment.CENTER)
 
-        val headerTable = Table(UnitValue.createPercentArray(floatArrayOf(1f, 2f))).useAllAvailableWidth()
+        val headerTable =
+            Table(UnitValue.createPercentArray(floatArrayOf(1f, 2f))).useAllAvailableWidth()
         headerTable.addCell(Cell().setTextAlignment(TextAlignment.CENTER).add(logo).setBorder(null))
         val headerText = """
         Транспортно-логистическая компания «Альтерна» - таможенный представитель с многолетним успешным опытом работы в сфере ВЭД.
@@ -100,16 +102,23 @@ object PdfGenerator {
         headerTable.addCell(Cell().add(headerParagraph).setBorder(null))
         document.add(headerTable)
 
-        document.add(Paragraph(title).setFont(fontBold).setFontSize(12f).setTextAlignment(TextAlignment.CENTER).setPaddingBottom(0f))
+        document.add(
+            Paragraph(title).setFont(fontBold).setFontSize(12f)
+                .setTextAlignment(TextAlignment.CENTER).setPaddingBottom(0f)
+        )
 
         // --- Таблица результатов 1 ---
-        if (resultTitle.isNotBlank()) document.add(Paragraph(resultTitle).setFont(font).setFontSize(10f))
+        if (resultTitle.isNotBlank()) document.add(
+            Paragraph(resultTitle).setFont(font).setFontSize(10f)
+        )
         if (results.isNotEmpty()) {
             document.add(buildTable(results, font, fontBold, false))
         }
 
         // --- Таблица результатов 2 ---
-        if (result2Title.isNotBlank()) document.add(Paragraph(result2Title).setFont(font).setFontSize(10f))
+        if (result2Title.isNotBlank()) document.add(
+            Paragraph(result2Title).setFont(font).setFontSize(10f)
+        )
         if (results2.isNotEmpty()) {
             document.add(buildTable(results2, font, fontBold, false))
         }
@@ -119,9 +128,14 @@ object PdfGenerator {
         document.add(buildTable(parameters, font, fontBold, true))
 
         // --- Дата и комментарий ---
-        document.add(Paragraph("Дата расчета: ${getCurrentDateTimeRu()}").setFont(font).setFontSize(10f))
+        document.add(
+            Paragraph("Дата расчета: ${getCurrentDateTimeRu()}").setFont(font).setFontSize(10f)
+        )
         comments?.takeIf { it.isNotBlank() }?.let {
-            document.add(Paragraph(it).setFont(font).setFontSize(10f).setFixedLeading(12f).setPaddingBottom(0f))
+            document.add(
+                Paragraph(it).setFont(font).setFontSize(10f).setFixedLeading(12f)
+                    .setPaddingBottom(0f)
+            )
         }
 
         // --- Футер (только на одной странице) ---
@@ -162,48 +176,56 @@ object PdfGenerator {
         if (!use2Cols) {
             table.addHeaderCell(
                 Cell()
-                    .add(Paragraph("Вид")
-                        .setFontSize(10f)
-                        .setMarginTop(0f)
-                        .setMarginBottom(0f)
-                        .setPadding(0f)
-                        .setFont(fontBold))
+                    .add(
+                        Paragraph("Вид")
+                            .setFontSize(10f)
+                            .setMarginTop(0f)
+                            .setMarginBottom(0f)
+                            .setPadding(0f)
+                            .setFont(fontBold)
+                    )
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(1f)
                     .setMargin(0f)
             )
             table.addHeaderCell(
                 Cell()
-                    .add(Paragraph("Ставка")
-                        .setFontSize(10f)
-                        .setMarginTop(0f)
-                        .setMarginBottom(0f)
-                        .setPadding(0f)
-                        .setFont(fontBold))
+                    .add(
+                        Paragraph("Ставка")
+                            .setFontSize(10f)
+                            .setMarginTop(0f)
+                            .setMarginBottom(0f)
+                            .setPadding(0f)
+                            .setFont(fontBold)
+                    )
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(1f)
                     .setMargin(0f)
             )
             table.addHeaderCell(
                 Cell()
-                    .add(Paragraph("Сумма, руб")
-                        .setFontSize(10f)
-                        .setMarginTop(0f)
-                        .setMarginBottom(0f)
-                        .setPadding(0f)
-                        .setFont(fontBold))
+                    .add(
+                        Paragraph("Сумма, руб")
+                            .setFontSize(10f)
+                            .setMarginTop(0f)
+                            .setMarginBottom(0f)
+                            .setPadding(0f)
+                            .setFont(fontBold)
+                    )
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(1f)
                     .setMargin(0f)
             )
             table.addHeaderCell(
                 Cell()
-                    .add(Paragraph("Сумма, $")
-                        .setFontSize(10f)
-                        .setMarginTop(0f)
-                        .setMarginBottom(0f)
-                        .setPadding(0f)
-                        .setFont(fontBold))
+                    .add(
+                        Paragraph("Сумма, $")
+                            .setFontSize(10f)
+                            .setMarginTop(0f)
+                            .setMarginBottom(0f)
+                            .setPadding(0f)
+                            .setFont(fontBold)
+                    )
                     .setTextAlignment(TextAlignment.CENTER)
                     .setPadding(1f)
                     .setMargin(0f)
@@ -212,23 +234,29 @@ object PdfGenerator {
 
         data.forEach {
             val fontStyle = if (it.bold) fontBold else fontNormal
-            table.addCell(Cell().setPadding(1f).add(Paragraph(it.first).setFont(fontStyle).setFontSize(10f)))
-            table.addCell(Cell().setPadding(1f).add(Paragraph(it.second).setFont(fontStyle).setFontSize(10f)))
+            table.addCell(
+                Cell().setPadding(1f).add(Paragraph(it.first).setFont(fontStyle).setFontSize(10f))
+            )
+            table.addCell(
+                Cell().setPadding(1f).add(Paragraph(it.second).setFont(fontStyle).setFontSize(10f))
+            )
             if (!use2Cols) {
                 table.addCell(
                     Cell()
                         .setPadding(1f)
                         .add(
-                            Paragraph(it.third).setFont(fontStyle).setFontSize(10f).setTextAlignment(
-                                TextAlignment.RIGHT
-                            )
+                            Paragraph(it.third).setFont(fontStyle).setFontSize(10f)
+                                .setTextAlignment(
+                                    TextAlignment.RIGHT
+                                )
                         )
                 )
                 table.addCell(
                     Cell()
                         .setPadding(1f)
                         .add(
-                            Paragraph(it.fourth).setFont(fontStyle).setFontSize(10f).setTextAlignment(TextAlignment.RIGHT)
+                            Paragraph(it.fourth).setFont(fontStyle).setFontSize(10f)
+                                .setTextAlignment(TextAlignment.RIGHT)
                         )
                 )
             }
@@ -353,193 +381,196 @@ object PdfGenerator {
         return table
     }
 */
-/*
-    fun generateCalcResultPdf(
-        context: Context,
-        outputPath: String? = null,
-        title: String,
-        parameters: List<ReportRowModel>,
-        resultTitle: String = "",
-        results: List<ReportRowModel> = emptyList(),
-        result2Title: String = "",
-        results2: List<ReportRowModel> = emptyList(),
-        comments: String? = null
-    ): File {
-        val outFile = outputPath?.let {
-            File(context.cacheDir, it)
-        } ?: File(context.cacheDir, "calc_result.pdf")
+    /*
+        fun generateCalcResultPdf(
+            context: Context,
+            outputPath: String? = null,
+            title: String,
+            parameters: List<ReportRowModel>,
+            resultTitle: String = "",
+            results: List<ReportRowModel> = emptyList(),
+            result2Title: String = "",
+            results2: List<ReportRowModel> = emptyList(),
+            comments: String? = null
+        ): File {
+            val outFile = outputPath?.let {
+                File(context.cacheDir, it)
+            } ?: File(context.cacheDir, "calc_result.pdf")
 
-        val document = Document(PageSize.A4, 18f, 18f, 18f, 18f)
-        val writer = PdfWriter.getInstance(document, FileOutputStream(outFile))
-        writer.pageEvent = FooterEvent(
-            listOf(
-                "Данный расчет не является публичной офертой.",
-                "За точным расчетом и дополнительной информацией обращайтесь в нашу компанию."
+            val document = Document(PageSize.A4, 18f, 18f, 18f, 18f)
+            val writer = PdfWriter.getInstance(document, FileOutputStream(outFile))
+            writer.pageEvent = FooterEvent(
+                listOf(
+                    "Данный расчет не является публичной офертой.",
+                    "За точным расчетом и дополнительной информацией обращайтесь в нашу компанию."
+                )
             )
-        )
 
-        document.open()
+            document.open()
 
-        // ---- Шрифт Roboto ----
-        val baseFont =
-            BaseFont.createFont("F:/Kotlin/Test/templates/roboto.ttf", BaseFont.IDENTITY_H, true)
-        val fontNormal = Font(baseFont, 10f, Font.NORMAL)
-        val fontBold = Font(baseFont, 10f, Font.BOLD)
+            // ---- Шрифт Roboto ----
+            val baseFont =
+                BaseFont.createFont("F:/Kotlin/Test/templates/roboto.ttf", BaseFont.IDENTITY_H, true)
+            val fontNormal = Font(baseFont, 10f, Font.NORMAL)
+            val fontBold = Font(baseFont, 10f, Font.BOLD)
 
-        // ---- Шапка ----
-        val headerTable = PdfPTable(2)
-        headerTable.widthPercentage = 100f
-        headerTable.setWidths(floatArrayOf(2f, 3f))
+            // ---- Шапка ----
+            val headerTable = PdfPTable(2)
+            headerTable.widthPercentage = 100f
+            headerTable.setWidths(floatArrayOf(2f, 3f))
 
-        // Логотип
-        val inputStream = context.assets.open("alterna-logo.jpg")
-        val bytes = inputStream.readBytes()
-        val logo = Image.getInstance(bytes)
-        logo.scaleToFit(196f, 150f)
-        val logoCell = PdfPCell(logo)
-        logoCell.border = Rectangle.NO_BORDER
-        headerTable.addCell(logoCell)
+            // Логотип
+            val inputStream = context.assets.open("alterna-logo.jpg")
+            val bytes = inputStream.readBytes()
+            val logo = Image.getInstance(bytes)
+            logo.scaleToFit(196f, 150f)
+            val logoCell = PdfPCell(logo)
+            logoCell.border = Rectangle.NO_BORDER
+            headerTable.addCell(logoCell)
 
-        // Правая часть (текст + контакты)
-        val rightCell = PdfPCell()
-        rightCell.border = Rectangle.NO_BORDER
-        rightCell.horizontalAlignment = Element.ALIGN_LEFT
+            // Правая часть (текст + контакты)
+            val rightCell = PdfPCell()
+            rightCell.border = Rectangle.NO_BORDER
+            rightCell.horizontalAlignment = Element.ALIGN_LEFT
 
-        // Описание компании
-        val companyParagraph = Paragraph(
-            """
-    Транспортно-логистическая компания «Альтерна» - таможенный представитель с многолетним успешным опытом работы в сфере ВЭД.
-    Мы занимаемся таможенным оформлением и доставкой грузов любой категории из всех стран Азии (Китай, Корея, Япония и т.д.) в Россию.
-    """.trimIndent(), fontNormal
-        )
-        companyParagraph.spacingAfter = 10f
-        companyParagraph.alignment = Element.ALIGN_LEFT
-        rightCell.addElement(companyParagraph)
+            // Описание компании
+            val companyParagraph = Paragraph(
+                """
+        Транспортно-логистическая компания «Альтерна» - таможенный представитель с многолетним успешным опытом работы в сфере ВЭД.
+        Мы занимаемся таможенным оформлением и доставкой грузов любой категории из всех стран Азии (Китай, Корея, Япония и т.д.) в Россию.
+        """.trimIndent(), fontNormal
+            )
+            companyParagraph.spacingAfter = 10f
+            companyParagraph.alignment = Element.ALIGN_LEFT
+            rightCell.addElement(companyParagraph)
 
-        // ---- Таблица контактов ----
-        val contactsTable = PdfPTable(2)
-        contactsTable.widthPercentage = 100f
-        contactsTable.setWidths(floatArrayOf(1f, 2f))
+            // ---- Таблица контактов ----
+            val contactsTable = PdfPTable(2)
+            contactsTable.widthPercentage = 100f
+            contactsTable.setWidths(floatArrayOf(1f, 2f))
 
-        fun addContactRow(label: String, value: String) {
-            val labelCell = PdfPCell(Phrase(label, fontNormal))
-            labelCell.border = Rectangle.NO_BORDER
-            labelCell.paddingBottom = 3f
-            contactsTable.addCell(labelCell)
+            fun addContactRow(label: String, value: String) {
+                val labelCell = PdfPCell(Phrase(label, fontNormal))
+                labelCell.border = Rectangle.NO_BORDER
+                labelCell.paddingBottom = 3f
+                contactsTable.addCell(labelCell)
 
-            val valueCell = PdfPCell(Phrase(value, fontNormal))
-            valueCell.border = Rectangle.NO_BORDER
-            valueCell.paddingBottom = 3f
-            contactsTable.addCell(valueCell)
-        }
-
-        addContactRow("Телефон:", "+7 (902) 050-40-50")
-        addContactRow("Email:", "broker@alterna.ltd")
-        addContactRow("Сайт:", "www.alternadv.com")
-
-        rightCell.addElement(contactsTable)
-        headerTable.addCell(rightCell)
-        headerTable.setSpacingAfter(20f)
-
-        // Добавляем всё в документ
-        document.add(headerTable)
-
-        //
-        val p = Paragraph(title, fontBold)
-        p.alignment = Element.ALIGN_CENTER
-        document.add(p)
-        //document.add(Chunk.NEWLINE)
-
-        // ---- Таблица результатов ----
-        if (resultTitle.isNotBlank()) {
-            document.add(Paragraph(resultTitle, fontBold))
-        }
-
-        if (results.count() > 0) {
-            val resultsTable = createTable(results, fontNormal, fontBold)
-            document.add(resultsTable)
-            document.add(Chunk.NEWLINE)
-        }
-
-        if (result2Title.isNotBlank()) {
-            document.add(Paragraph(result2Title, fontBold))
-        }
-
-        if (results2.count() > 0) {
-            val results2Table = createTable(results2, fontNormal, fontBold)
-            document.add(results2Table)
-            document.add(Chunk.NEWLINE)
-        }
-
-        // ---- Таблица параметров ----
-        document.add(Paragraph("Параметры", fontBold))
-        val paramsTable = createTable(parameters, fontNormal, fontBold, true)
-        document.add(paramsTable)
-        document.add(Chunk.NEWLINE)
-
-        // ---- Дата ----
-        val dated = getCurrentDateTimeRu()
-        document.add(Paragraph("Дата расчета: $dated", fontNormal))
-        document.add(Chunk.NEWLINE)
-
-        // ---- Комментарий ----
-        comments?.takeIf { it.isNotBlank() }?.let {
-            document.add(Paragraph(it, fontNormal))
-        }
-
-        document.close()
-        return outFile
-    }
-
-    private fun createTable(
-        data: List<ReportRowModel>,
-        fontNormal: Font,
-        fontBold: Font,
-        use2Cols: Boolean = false
-    ): PdfPTable {
-        val table = if (!use2Cols) PdfPTable(4) else PdfPTable(2)
-        table.setSpacingBefore(10f)
-        table.widthPercentage = 100f
-
-        if (!use2Cols) {
-            table.setWidths(floatArrayOf(1f, 2f, 1f, 1f))
-
-            // Заголовки
-            table.addCell(createCell("Вид", fontBold))
-            table.addCell(createCell("Ставка", fontBold))
-            table.addCell(createCell("Сумма, руб", fontBold))
-            table.addCell(createCell("Сумма, $", fontBold))
-
-        } else {
-            table.setWidths(floatArrayOf(1f, 2f))
-        }
-
-        data.forEach {
-            val o = if (it.bold) fontBold else fontNormal
-            table.addCell(Phrase(it.first, o))
-            table.addCell(Phrase(it.second, o))
-            if (!use2Cols) {
-                table.addCell(createCell(it.third, o, alignment = Element.ALIGN_RIGHT))
-                table.addCell(createCell(it.fourth, o, alignment = Element.ALIGN_RIGHT))
+                val valueCell = PdfPCell(Phrase(value, fontNormal))
+                valueCell.border = Rectangle.NO_BORDER
+                valueCell.paddingBottom = 3f
+                contactsTable.addCell(valueCell)
             }
+
+            addContactRow("Телефон:", "+7 (902) 050-40-50")
+            addContactRow("Email:", "broker@alterna.ltd")
+            addContactRow("Сайт:", "www.alternadv.com")
+
+            rightCell.addElement(contactsTable)
+            headerTable.addCell(rightCell)
+            headerTable.setSpacingAfter(20f)
+
+            // Добавляем всё в документ
+            document.add(headerTable)
+
+            //
+            val p = Paragraph(title, fontBold)
+            p.alignment = Element.ALIGN_CENTER
+            document.add(p)
+            //document.add(Chunk.NEWLINE)
+
+            // ---- Таблица результатов ----
+            if (resultTitle.isNotBlank()) {
+                document.add(Paragraph(resultTitle, fontBold))
+            }
+
+            if (results.count() > 0) {
+                val resultsTable = createTable(results, fontNormal, fontBold)
+                document.add(resultsTable)
+                document.add(Chunk.NEWLINE)
+            }
+
+            if (result2Title.isNotBlank()) {
+                document.add(Paragraph(result2Title, fontBold))
+            }
+
+            if (results2.count() > 0) {
+                val results2Table = createTable(results2, fontNormal, fontBold)
+                document.add(results2Table)
+                document.add(Chunk.NEWLINE)
+            }
+
+            // ---- Таблица параметров ----
+            document.add(Paragraph("Параметры", fontBold))
+            val paramsTable = createTable(parameters, fontNormal, fontBold, true)
+            document.add(paramsTable)
+            document.add(Chunk.NEWLINE)
+
+            // ---- Дата ----
+            val dated = getCurrentDateTimeRu()
+            document.add(Paragraph("Дата расчета: $dated", fontNormal))
+            document.add(Chunk.NEWLINE)
+
+            // ---- Комментарий ----
+            comments?.takeIf { it.isNotBlank() }?.let {
+                document.add(Paragraph(it, fontNormal))
+            }
+
+            document.close()
+            return outFile
         }
 
-        return table
-    }
+        private fun createTable(
+            data: List<ReportRowModel>,
+            fontNormal: Font,
+            fontBold: Font,
+            use2Cols: Boolean = false
+        ): PdfPTable {
+            val table = if (!use2Cols) PdfPTable(4) else PdfPTable(2)
+            table.setSpacingBefore(10f)
+            table.widthPercentage = 100f
 
-    private fun createCell(
-        text: String,
-        font: Font,
-        alignment: Int = Element.ALIGN_CENTER
-    ): PdfPCell {
-        val cell = PdfPCell(Phrase(text, font))
-        cell.horizontalAlignment = alignment
-        return cell
-    }
-*/
+            if (!use2Cols) {
+                table.setWidths(floatArrayOf(1f, 2f, 1f, 1f))
+
+                // Заголовки
+                table.addCell(createCell("Вид", fontBold))
+                table.addCell(createCell("Ставка", fontBold))
+                table.addCell(createCell("Сумма, руб", fontBold))
+                table.addCell(createCell("Сумма, $", fontBold))
+
+            } else {
+                table.setWidths(floatArrayOf(1f, 2f))
+            }
+
+            data.forEach {
+                val o = if (it.bold) fontBold else fontNormal
+                table.addCell(Phrase(it.first, o))
+                table.addCell(Phrase(it.second, o))
+                if (!use2Cols) {
+                    table.addCell(createCell(it.third, o, alignment = Element.ALIGN_RIGHT))
+                    table.addCell(createCell(it.fourth, o, alignment = Element.ALIGN_RIGHT))
+                }
+            }
+
+            return table
+        }
+
+        private fun createCell(
+            text: String,
+            font: Font,
+            alignment: Int = Element.ALIGN_CENTER
+        ): PdfPCell {
+            val cell = PdfPCell(Phrase(text, font))
+            cell.horizontalAlignment = alignment
+            return cell
+        }
+    */
 }
 
-fun buildReportRows(calcResult: CalcResultModel?): Pair<List<ReportRowModel>, List<ReportRowModel>> {
+fun buildReportRows(
+    calcResult: CalcResultModel?,
+    calcParams: CalcParamsModel?
+): Pair<List<ReportRowModel>, List<ReportRowModel>> {
     val parameters = mutableListOf<ReportRowModel>()
     val results = mutableListOf<ReportRowModel>()
 
@@ -550,15 +581,52 @@ fun buildReportRows(calcResult: CalcResultModel?): Pair<List<ReportRowModel>, Li
     calcResult.chosen?.let { chosen ->
         parameters.add(ReportRowModel("Код ТН ВЭД", chosen.code))
         parameters.add(ReportRowModel("Направление", chosen.direction))
-        parameters.add(ReportRowModel("Страна", chosen.country))
+
+        val countryCode = chosen.country
+        val countryName = if (countryCode.isNotBlank()) {
+            // ищем страну в calcParams.countries
+            val match = calcParams?.countries?.firstOrNull { it.code == countryCode }
+            match?.name ?: countryCode
+        } else {
+            ""
+        }
+        parameters.add(ReportRowModel("Страна", countryName))
+
         chosen.paramCost?.let {
             parameters.add(ReportRowModel("Стоимость (USD)", String.format(Locale.US, "%,.2f", it)))
         }
+
         chosen.addons?.forEach { (k, v) ->
-            parameters.add(ReportRowModel("Параметр $k", String.format(Locale.US, "%,.2f", v)))
+            val match = calcParams?.calcParams?.values?.firstOrNull { it.code == k }
+            val paramName = if (match != null) {
+                val name = match.name.takeIf { it.isNotBlank() } ?: "Параметр $k"
+                val dimension = match.dimension.takeIf { it.isNotBlank() }
+                if (dimension != null) "$name, $dimension" else name
+            } else {
+                "Параметр $k"
+            }
+
+            parameters.add(ReportRowModel(paramName, String.format(Locale.US, "%,.2f", v)))
         }
+
         chosen.specials?.forEach { (k, v) ->
-            parameters.add(ReportRowModel("Особое условие $k", v))
+            val match = calcParams?.calcSpecial?.firstOrNull { it.type == k && it.id == v }
+            if (match != null && match.typeName.isNotBlank() && match.name.isNotBlank()) {
+                parameters.add(
+                    ReportRowModel(
+                        "Особое условие, ${match.typeName}",
+                        match.name
+                    )
+                )
+            } else {
+                // если не нашли - оставляем как было
+                parameters.add(
+                    ReportRowModel(
+                        "Особое условие $k",
+                        v
+                    )
+                )
+            }
         }
     }
 

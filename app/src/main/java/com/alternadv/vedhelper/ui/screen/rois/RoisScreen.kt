@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,8 +28,15 @@ fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
         OutlinedTextField(
             value = state.searchTerm,
             onValueChange = { viewModel.onSearchInput(it) },
-            label = { Text("Введите ключевое слово") },
+            label = { Text("Введите ключевое слово (мин. 3 символа)") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+            trailingIcon = {
+                if (state.searchTerm.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.onSearchInput("") }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Очистить")
+                    }
+                }
+            },
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -46,7 +55,28 @@ fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
             }
 
             state.isShowHint -> {
-                Text("Введите минимум 3 символа для поиска.", style = MaterialTheme.typography.bodyMedium)
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 10.dp)
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(
+                            text = "РОИС — Реестр объектов интеллектуальной собственности",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "С помощью РОИС вы можете найти и проверить статус патентов, " +
+                                    "товарных знаков и других объектов интеллектуальной собственности, " +
+                                    "чтобы убедиться в их правовой охране и уникальности.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             }
 
             state.isShowNotFound -> {
@@ -54,11 +84,6 @@ fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
             }
 
             else -> {
-                state.oisText?.let {
-                    Text(text = it, style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(16.dp))
-                }
-
                 LazyColumn {
                     items(state.items) { item ->
                         RoisItem(item)
@@ -82,7 +107,7 @@ fun RoisItem(item: OisModel) {
             item.image?.let {
                 Spacer(Modifier.height(8.dp))
                 Image(
-                    painter = rememberAsyncImagePainter(it),
+                    painter = rememberAsyncImagePainter("https://alternadv.com/img/ois/$it"),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()

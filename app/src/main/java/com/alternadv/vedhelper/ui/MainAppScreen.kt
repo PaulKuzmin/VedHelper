@@ -1,12 +1,17 @@
 package com.alternadv.vedhelper.ui
 
+import android.content.Intent
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Web
 import androidx.compose.material3.*
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ModalNavigationDrawer
@@ -15,8 +20,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import kotlinx.coroutines.launch
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.net.toUri
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -27,6 +34,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.alternadv.vedhelper.ui.components.ExpandableFabMenu
+import com.alternadv.vedhelper.ui.components.FabMenuItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavigationBar
 import com.alternadv.vedhelper.ui.navigation.DrawerContent
@@ -41,6 +50,7 @@ import com.alternadv.vedhelper.ui.screen.examples.ExamplesScreen
 import com.alternadv.vedhelper.ui.screen.rois.RoisScreen
 import com.alternadv.vedhelper.ui.screen.tnved.TnvedScreen
 import com.alternadv.vedhelper.ui.screen.tnvedcode.TnvedCodeScreen
+import com.alternadv.vedhelper.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 //@Preview
@@ -108,6 +118,8 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
     val calcResultViewModel: CalcResultViewModel = viewModel()
     val carCalcResultViewModel: CarCalcResultViewModel = viewModel()
 
+    val context = LocalContext.current
+
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
@@ -127,6 +139,55 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         }
     ) {
         Scaffold(
+            //
+            floatingActionButton = {
+                ExpandableFabMenu(
+                    modifier = Modifier.offset(y = (-70).dp),
+                    items = listOf(
+                        FabMenuItem(
+                            "Позвонить",
+                            iconVector = Icons.Default.Call
+                        ) {
+                            context.startActivity(
+                                Intent(Intent.ACTION_DIAL, "tel:+79020504050".toUri())
+                            )
+                        },
+                        FabMenuItem(
+                            "Написать",
+                            iconVector = Icons.Default.Email
+                        ) {
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = "mailto:broker@alterna.ltd".toUri()
+                                putExtra(Intent.EXTRA_SUBJECT, "Заявка на таможенное оформление")
+                                putExtra(Intent.EXTRA_TEXT, "Здравствуйте! ")
+                            }
+                            context.startActivity(intent)
+                        },
+                        FabMenuItem(
+                            "WhatsApp",
+                            iconPainter = painterResource(id = R.drawable.whatsapp_outline_icon)
+                        ) {
+                            val url = "https://wa.me/79510275454?text=Здравствуйте!"
+                            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        },
+                        FabMenuItem(
+                            "Telegram",
+                            iconPainter = painterResource(id = R.drawable.telegram_outline_icon)
+                        ) {
+                            val url = "https://t.me/alterna_manager"
+                            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        },
+                        FabMenuItem(
+                            "WWW",
+                            iconVector = Icons.Default.Web
+                        ) {
+                            val url = "https://www.alternadv.com/"
+                            context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
+                        }
+                    )
+                )
+            },
+            //
             topBar = {
                 TopAppBar(
                     title = { Text(title) },

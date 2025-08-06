@@ -2,9 +2,6 @@ package com.alternadv.vedhelper.ui.screen.carcalcresult
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,8 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.model.CarCustomsPayment
-import com.alternadv.vedhelper.model.CalcCurrencyRate
-import com.alternadv.vedhelper.model.VehicleTypes
+import com.alternadv.vedhelper.ui.components.SegmentedButton
 import java.util.Locale
 
 @Composable
@@ -72,20 +68,30 @@ fun CarCalcResultScreen(
                     }
                 }
 
+                // Примечание
+                val messages = collectCarMessages(data)
+                if (messages.isNotEmpty()) {
+                    item {
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text("Примечание:", style = MaterialTheme.typography.titleSmall)
+                        messages.forEach {
+                            Text(" * $it")
+                        }
+                    }
+                }
+
                 // Курсы валют
                 val currencies = data.calculation.currencies?.values?.toList().orEmpty()
                 if (currencies.isNotEmpty()) {
                     item {
-                        Text("Курсы валют", style = MaterialTheme.typography.titleMedium)
+                        Text("Курсы валют:", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 16.dp))
+                        currencies.forEach {
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                                Text(it.name)
+                                Text(String.format(Locale.US, "%.4f", it.value))
+                            }
+                        }
                     }
-                    items(currencies) { rate ->
-                        CurrencyRow(rate)
-                    }
-                }
-
-                item {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text("Дорого?\nОтправьте запрос и получите индивидуальный расчет!")
                 }
             }
 /*
@@ -108,18 +114,15 @@ fun CarCalcResultScreen(
     }
 }
 
-@Composable
-private fun SegmentedButton(selected: Boolean, text: String, onClick: () -> Unit) {
-    OutlinedButton(
-        onClick = onClick,
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
-            contentColor = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-        ),
-        border = if (selected) null else ButtonDefaults.outlinedButtonBorder
-    ) {
-        Text(text)
-    }
+private fun collectCarMessages(data: CarCalcResultModel): List<String> {
+    val baseMessage = "Уплачивается в случае ввоза импортного автомобиля " +
+            "с целью его дальнейшей перепродажи на территории РФ " +
+            "в течение одного года с даты получения ПТС."
+
+    val fMessages = data.calculation.f?.messages?.map { it.message } ?: emptyList()
+    val uMessages = data.calculation.u?.messages?.map { it.message } ?: emptyList()
+
+    return listOf(baseMessage) + fMessages + uMessages
 }
 
 @Composable
@@ -146,34 +149,5 @@ private fun PaymentsCard(
                 }
             }
         }
-    }
-}
-
-@Composable
-private fun CurrencyRow(rate: CalcCurrencyRate) {
-    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(rate.name)
-        Text(String.format(Locale.US, "%.4f", rate.value))
-    }
-}
-
-private fun buildMessage(data: CarCalcResultModel): String {
-    val engines = mapOf(
-        "f" to "бензиновый", "d" to "дизельный",
-        "h" to "гибридный", "e" to "электрический"
-    )
-
-    val chosen = data.chosen
-    return buildString {
-        append("Здравствуйте! Рассчитайте, пожалуйста:")
-        append(" тип авто: ${VehicleTypes[chosen.vehicle]} ")
-        append("; дата выпуска: ${chosen.month}.${chosen.year} ")
-        append("; двигатель: ${engines[chosen.engine]} ")
-        chosen.weight?.let { append("; полный вес, кг: $it ") }
-        chosen.seats?.let { append("; количество мест: $it ") }
-        chosen.bag?.let { append("; объем баг.отделения, куб.см.: $it ") }
-        chosen.capacity?.let { append("; объем двигателя, куб.см.: $it ") }
-        chosen.power?.let { append("; мощность, л.с.: $it ") }
-        chosen.cost?.let { append("; стоимость, дол.США: $it ") }
     }
 }

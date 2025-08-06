@@ -5,17 +5,20 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CalcMessage
 import com.alternadv.vedhelper.model.CalcResultPaymentModel
-import com.alternadv.vedhelper.ui.navigation.BottomNavItem
+import com.alternadv.vedhelper.ui.components.SegmentedButton
 import com.alternadv.vedhelper.utils.PdfGenerator
 import com.alternadv.vedhelper.utils.buildReportRows
 import java.util.Locale
@@ -36,26 +39,28 @@ fun CalcResultScreen(
     }
 
     val calc = result!!.calculation
-    val chosen = result!!.chosen
+    //val chosen = result!!.chosen
+
+    val context = LocalContext.current
 
     LazyColumn(modifier = Modifier.padding(16.dp)) {
         item {
+            // Переключатель валют
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Button(
-                    onClick = { selectedCurrency = "rubles" },
-                    enabled = selectedCurrency != "rubles"
-                ) {
-                    Text("₽")
-                }
-                Button(
-                    onClick = { selectedCurrency = "usd" },
-                    enabled = selectedCurrency != "usd"
-                ) {
-                    Text("$")
-                }
+                SegmentedButton(
+                    selected = selectedCurrency == "rubles",
+                    text = "В рублях",
+                    onClick = { selectedCurrency = "rubles" }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                SegmentedButton(
+                    selected = selectedCurrency == "usd",
+                    text = "В дол.США",
+                    onClick = { selectedCurrency = "usd" }
+                )
             }
         }
 
@@ -74,30 +79,37 @@ fun CalcResultScreen(
         val currencies = calc?.currencies?.values?.toList().orEmpty()
         if (currencies.isNotEmpty()) {
             item {
-                Text("Курсы валют", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top = 16.dp))
+                Text(
+                    "Курсы валют:",
+                    style = MaterialTheme.typography.titleSmall,
+                    modifier = Modifier.padding(top = 16.dp)
+                )
                 currencies.forEach {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                         Text(it.name)
-                        Text(it.value.toString())
+                        Text(String.format(Locale.US, "%.4f", it.value))
                     }
                 }
             }
         }
 
         item {
-            val context = LocalContext.current
-
             Button(
                 onClick = {
+                    val comments = result?.calculation?.messages
+                        ?.map { it.message }
+                        ?.joinToString(separator = "\n") { "* $it" }
+                        ?: ""
 
-                    val (parametersData, resultsData) = buildReportRows(result)
+                    val (parametersData, resultsData) = buildReportRows(result, params)
                     val reportFile = PdfGenerator.generateCalcResultPdf(
                         context = context,
                         outputPath = "Результаты_расчета_таможенной_пошлины_Альтерна.pdf",
                         title = "Результаты расчета таможенной пошлины",
                         parameters = parametersData,
                         resultTitle = "При оформлении на юридическое лицо",
-                        results = resultsData
+                        results = resultsData,
+                        comments = comments
                     )
                     val uri = FileProvider.getUriForFile(
                         context,
@@ -111,7 +123,9 @@ fun CalcResultScreen(
                     }
                     context.startActivity(Intent.createChooser(shareIntent, "Поделиться расчетом"))
                 },
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
             ) {
                 Icon(Icons.Default.Share, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
@@ -144,7 +158,6 @@ fun ResultSection(
 ) {
     Card(modifier = Modifier.padding(vertical = 16.dp)) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Text("Итог", style = MaterialTheme.typography.titleMedium)
             payments.orEmpty().forEach {
                 if (it.summaRub != null && it.summaRub > 0) {
                     Row(
@@ -154,7 +167,17 @@ fun ResultSection(
                             .padding(vertical = 4.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(it.name ?: "")
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(it.name ?: "")
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = "Подробнее о ставке",
+                                tint = Color.Gray,
+                                modifier = Modifier
+                                    .padding(start = 4.dp)
+                                    .size(16.dp)
+                            )
+                        }
                         Text(String.format(Locale.US, "%.2f", it.getAmount(currency)))
                     }
                 }
@@ -174,14 +197,14 @@ fun ResultSection(
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+        }
+    }
 
-            if (!messages.isNullOrEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text("Примечание:", style = MaterialTheme.typography.titleSmall)
-                messages.forEach {
-                    Text(it.message)
-                }
-            }
+    if (!messages.isNullOrEmpty()) {
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("Примечание:", style = MaterialTheme.typography.titleSmall)
+        messages.forEach {
+            Text(" * ${it.message}")
         }
     }
 }
