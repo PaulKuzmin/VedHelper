@@ -1,12 +1,18 @@
 package com.alternadv.vedhelper.ui.screen.rois
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -14,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
 import com.alternadv.vedhelper.model.OisModel
 
@@ -94,6 +101,7 @@ fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
     }
 }
 
+/*
 @Composable
 fun RoisItem(item: OisModel) {
     Card(
@@ -108,7 +116,7 @@ fun RoisItem(item: OisModel) {
                 Spacer(Modifier.height(8.dp))
                 Image(
                     painter = rememberAsyncImagePainter("https://alternadv.com/img/ois/$it"),
-                    contentDescription = null,
+                    contentDescription = "Нет изображения",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(150.dp)
@@ -119,5 +127,85 @@ fun RoisItem(item: OisModel) {
             item.document?.let { Text("Документ: $it") }
             item.dateend?.let { Text("Дата окончания: $it") }
         }
+    }
+}
+ */
+@Composable
+fun RoisItem(item: OisModel) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp)
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Основные поля (всегда видны)
+            item.regnom?.takeIf { it.isNotBlank() }?.let { LabeledValue("Рег. номер", it) }
+            item.g3112?.takeIf { it.isNotBlank() }?.let { LabeledValue("Наименование", it) }
+            item.dateend?.takeIf { it.isNotBlank() }?.let { LabeledValue("Срок внесения в реестр", it) }
+
+            val imageUrl = "https://alternadv.com/img/ois/${item.image}"
+            val painter = rememberAsyncImagePainter(model = imageUrl)
+            val state = painter.state
+
+            if (state !is AsyncImagePainter.State.Error) {
+                Image(
+                    painter = painter,
+                    contentDescription = "Изображение",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp)
+                        .padding(top = 8.dp)
+                )
+            }
+
+            Spacer(Modifier.height(12.dp))
+
+            // Кнопка "Данные по объекту ИС"
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "Данные по объекту ИС",
+                    style = MaterialTheme.typography.titleSmall
+                )
+                Icon(
+                    imageVector = if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) "Скрыть" else "Показать",
+                )
+            }
+
+            AnimatedVisibility(
+                visible = expanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
+                Column {
+                    item.note?.takeIf { it.isNotBlank() }?.let { LabeledValue("Описание", it) }
+                    item.document?.takeIf { it.isNotBlank() }?.let { LabeledValue("Документ об охраноспособности ОИС", it) }
+                    item.name?.takeIf { it.isNotBlank() }?.let { LabeledValue("Сведения о правообладателе", it) }
+                    item.namet?.takeIf { it.isNotBlank() }?.let { LabeledValue("Наименование товаров", it) }
+                    item.agent?.takeIf { it.isNotBlank() }?.let { LabeledValue("Доверенные лица правообладателя", it) }
+                    item.mktu?.takeIf { it.isNotBlank() }?.let { LabeledValue("Класс товаров по МКТУ", it) }
+                    item.letter?.takeIf { it.isNotBlank() }?.let { LabeledValue("Письма ФТС", it) }
+                    item.g33?.takeIf { it.isNotBlank() }?.let { LabeledValue("Коды ТНВЭД", it) }
+                    item.comm?.takeIf { it.isNotBlank() }?.let { LabeledValue("Примечание", it) }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun LabeledValue(label: String, value: String) {
+    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+        Text(text = label, style = MaterialTheme.typography.labelMedium)
+        Text(text = value, style = MaterialTheme.typography.bodyMedium)
     }
 }
