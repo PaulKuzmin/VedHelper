@@ -20,12 +20,17 @@ fun CarCalcParamsInput(
     OutlinedTextField(
         value = value?.toInt()?.toString() ?: "",
         onValueChange = { input ->
-            // Разрешаем только цифры
             val filtered = input.filter { it.isDigit() }
-            // Просто передаём пустое или число
             onChange(param.code, filtered)
         },
-        label = { Text(param.name) },
+        label = {
+            Text(
+                text = if (param.dimension.isNotBlank())
+                    "${param.name}, ${param.dimension}"
+                else
+                    param.name
+            )
+        },
         placeholder = { Text(param.dimension) },
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = Modifier

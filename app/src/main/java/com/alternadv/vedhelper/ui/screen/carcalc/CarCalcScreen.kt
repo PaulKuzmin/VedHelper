@@ -96,7 +96,13 @@ fun CarCalcScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Button(
-                        onClick = { viewModel.calcClick() },
+                        onClick = {
+                            if (viewModel.lastCarCalcParams != null) {
+                                carCalcResultViewModel.setParams(viewModel.lastCarCalcParams!!)
+                            }
+
+                            viewModel.calcClick()
+                        },
                         enabled = !state.isCalculating,
                         modifier = Modifier.weight(1f)
                     ) {

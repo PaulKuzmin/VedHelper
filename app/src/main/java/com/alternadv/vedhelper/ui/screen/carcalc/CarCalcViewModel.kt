@@ -3,6 +3,8 @@ package com.alternadv.vedhelper.ui.screen.carcalc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CarCalcSource
+import com.alternadv.vedhelper.model.CalcParamsModel
+import com.alternadv.vedhelper.model.CarCalcParamsModel
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.utils.CurrencyConverter
 import kotlinx.coroutines.async
@@ -21,6 +23,7 @@ import kotlin.text.toInt
 class CarCalcViewModel : ViewModel() {
 
     var onCalcSuccess: ((CarCalcResultModel) -> Unit)? = null
+    var lastCarCalcParams: CarCalcParamsModel? = null
 
     val currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR)
     val years = (currentYear downTo currentYear - 20).toList()
@@ -38,6 +41,7 @@ class CarCalcViewModel : ViewModel() {
             try {
                 val paramMap = chosen?.toParamMap() ?: emptyMap()
                 val data = CarCalcSource.getParams(vehicle, paramMap)
+                lastCarCalcParams = data
                 _uiState.update {
                     it.copy(
                         calcParams = data?.calcParams ?: emptyList(),

@@ -3,6 +3,7 @@ package com.alternadv.vedhelper.utils
 import android.content.Context
 import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CalcResultModel
+import com.alternadv.vedhelper.model.CarCalcParamsModel
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.model.CarReportRows
 import com.alternadv.vedhelper.model.ReportRowModel
@@ -580,7 +581,16 @@ fun buildReportRows(
 
     calcResult.chosen?.let { chosen ->
         parameters.add(ReportRowModel("Код ТН ВЭД", chosen.code))
-        parameters.add(ReportRowModel("Направление", chosen.direction))
+        parameters.add(
+            ReportRowModel(
+                "Направление",
+                when (chosen.direction) {
+                    "I" -> "Импорт"
+                    "E" -> "Экспорт"
+                    else -> "Неизвестно"
+                }
+            )
+        )
 
         val countryCode = chosen.country
         val countryName = if (countryCode.isNotBlank()) {
@@ -656,7 +666,7 @@ fun buildReportRows(
     return parameters to results
 }
 
-fun buildCarReportRows(calcResult: CarCalcResultModel?): CarReportRows {
+fun buildCarReportRows(calcResult: CarCalcResultModel?, calcParams: CarCalcParamsModel?): CarReportRows {
     val parameters = mutableListOf<ReportRowModel>()
     val resultsF = mutableListOf<ReportRowModel>()
     val resultsU = mutableListOf<ReportRowModel>()
