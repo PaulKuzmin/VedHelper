@@ -13,6 +13,7 @@
         android:theme="@style/Theme.VedHelper">
         <activity
             android:name=".MainActivity"
+            android:windowSoftInputMode="adjustResize"
             android:exported="true"
             android:theme="@style/Theme.VedHelper.Splash">
             <intent-filter>
