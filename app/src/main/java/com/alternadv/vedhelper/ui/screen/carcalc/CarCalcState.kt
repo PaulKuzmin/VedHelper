@@ -21,6 +21,10 @@ data class CarCalcState(
     val isCalculating: Boolean = false,
     val errorMessage: String? = null,
 
+    val rawPowerInput: String = "",
+    val rawPower: Double? = null,
+    val powerUnit: String = "h",
+
     val months: Map<Int, String> = mapOf(
         1 to "Январь",
         2 to "Февраль",

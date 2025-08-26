@@ -19,10 +19,12 @@ import com.alternadv.vedhelper.ui.components.CarCalcParamsInput
 import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.EnginePicker
 import com.alternadv.vedhelper.ui.components.MonthPicker
+import com.alternadv.vedhelper.ui.components.PowerTypePicker
 import com.alternadv.vedhelper.ui.components.YearPicker
 import com.alternadv.vedhelper.ui.components.VehicleTypePicker
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultViewModel
+import java.util.Locale
 
 @Composable
 fun CarCalcScreen(
@@ -73,7 +75,7 @@ fun CarCalcScreen(
                 // --- Стоимость и валюта в одной строке ---
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
-                        value = state.rawCost?.let { String.format("%.0f", it) } ?: "",
+                        value = state.rawCost?.let { String.format(Locale.US, "%.0f", it) } ?: "",
                         onValueChange = viewModel::onRawCostChanged,
                         label = { Text("Стоимость") },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -163,9 +165,35 @@ fun CarCalcScreen(
 private fun CarCalcContent(state: CarCalcState, viewModel: CarCalcViewModel) {
 
     state.calcParams.forEach { param ->
-        if (param.code != "engine") {
+        if (param.code != "engine" && param.code != "power") {
             val paramValue = state.chosenParams[param.code]
             CarCalcParamsInput(param, paramValue, viewModel::onCarCalcParamChanged)
+        } else if (param.code == "power") {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    //value = state.rawPower?.let { String.format(Locale.US, "%.0f", it) } ?: "",
+                    value = state.rawPowerInput,
+                    //onValueChange = viewModel::onRawPowerChanged,
+                    onValueChange = { newValue ->
+                        // Разрешаем только цифры и точку
+                        val filtered = newValue.replace(',', '.')
+                            .filter { it.isDigit() || it == '.' }
+
+                        viewModel.onRawPowerChanged(filtered)
+                    },
+                    label = { Text("Мощность") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.weight(1f)
+                )
+                PowerTypePicker(
+                    selected = state.powerUnit,
+                    onChange = viewModel::onPowerUnitChanged,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         } else {
             EnginePicker(
                 engines = state.calcEngines,

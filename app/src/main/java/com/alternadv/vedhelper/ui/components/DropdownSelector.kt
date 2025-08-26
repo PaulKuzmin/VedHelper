@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownSelector(
-    label: String,
+    label: String?,
     options: List<Pair<String, String>>,
     selected: String,
     onSelect: (String) -> Unit,
@@ -33,7 +33,7 @@ fun DropdownSelector(
             value = selectedText,
             onValueChange = {},
             readOnly = true,
-            label = { Text(label) },
+            label = label.takeIf { !it.isNullOrBlank() }?.let { { Text(it) } },
             modifier = Modifier
                 .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
                 .fillMaxWidth()

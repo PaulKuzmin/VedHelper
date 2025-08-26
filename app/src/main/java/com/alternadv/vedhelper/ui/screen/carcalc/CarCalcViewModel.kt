@@ -3,10 +3,10 @@ package com.alternadv.vedhelper.ui.screen.carcalc
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.alternadv.vedhelper.datasource.CarCalcSource
-import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CarCalcParamsModel
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.utils.CurrencyConverter
+import com.alternadv.vedhelper.utils.PowerConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,7 +52,10 @@ class CarCalcViewModel : ViewModel() {
                 }
             } catch (e: Exception) {
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Ошибка загрузки параметров")
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = e.message ?: "Ошибка загрузки параметров"
+                    )
                 }
             }
         }
@@ -90,6 +93,19 @@ class CarCalcViewModel : ViewModel() {
         }
     }
 
+    fun onRawPowerChanged(v: String) {
+        /*
+        val value = v.toDoubleOrNull()
+        _uiState.update {
+            it.copy(rawPower = value)
+        }
+         */
+        _uiState.update { it.copy(rawPowerInput = v) }
+
+        val parsed = v.toDoubleOrNull()
+        _uiState.update { it.copy(rawPower = parsed) }
+    }
+
     fun onCarCalcParamChanged(code: String, value: String) {
         val doubleValue = value.toDoubleOrNull()
         _uiState.update { state ->
@@ -109,6 +125,13 @@ class CarCalcViewModel : ViewModel() {
 
     fun onEngineChanged(id: String) {
         _uiState.update { it.copy(engine = id) }
+        loadParams(_uiState.value.vehicle, _uiState.value)
+    }
+
+    fun onPowerUnitChanged(id: String) {
+        _uiState.update {
+            it.copy(powerUnit = id)
+        }
     }
 
     fun calcClick() {
@@ -127,7 +150,8 @@ class CarCalcViewModel : ViewModel() {
                 }
 
                 val paramMap = _uiState.value.toParamMap()
-                val calcDeferred = async { CarCalcSource.getCalc(vehicle = _uiState.value.vehicle, paramMap) }
+                val calcDeferred =
+                    async { CarCalcSource.getCalc(vehicle = _uiState.value.vehicle, paramMap) }
                 val result = calcDeferred.await()
 
                 _uiState.update { it.copy(isCalculating = false) }
@@ -190,6 +214,14 @@ class CarCalcViewModel : ViewModel() {
         chosenParams.forEach { (key, value) ->
             map[key] = value.toInt().toString() // <-- ключевое изменение
         }
+
+        val powerValue = when {
+            rawPower == null || rawPower < 0 -> 0
+            powerUnit == "k" -> PowerConverter.kilowattsToHorsepower(rawPower).toInt()
+            else -> rawPower.toInt()
+        }
+        map["power"] = powerValue.toString()
+
         map["month"] = month.toString()
         map["year"] = year.toString()
         map["json"] = "1"
