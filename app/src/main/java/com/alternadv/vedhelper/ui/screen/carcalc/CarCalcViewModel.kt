@@ -156,7 +156,7 @@ class CarCalcViewModel : ViewModel() {
 
                 _uiState.update { it.copy(isCalculating = false) }
 
-                if (result?.calculation?.u?.success != true || result.calculation.f?.success != true) {
+                if (result?.calculation?.u?.success != true || (result.calculation.f != null && result.calculation.f.success != true)) {
 
                     if (result?.calculation?.u?.messages?.isNotEmpty() == true || result?.calculation?.f?.messages?.isNotEmpty() == true) {
                         val fErrorText = buildString {
@@ -217,7 +217,7 @@ class CarCalcViewModel : ViewModel() {
 
         val powerValue = when {
             rawPower == null || rawPower < 0 -> 0
-            powerUnit == "k" -> PowerConverter.kilowattsToHorsepower(rawPower).toInt()
+            powerUnit == "k" -> PowerConverter.kilowattsToHorsepower(rawPower)
             else -> rawPower.toInt()
         }
         map["power"] = powerValue.toString()
