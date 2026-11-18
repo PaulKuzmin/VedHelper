@@ -3,13 +3,17 @@ package com.alternadv.vedhelper.ui.components
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 
+/**
+ * Единицы мощности. Значения совпадают с API (power_edizm): ls | kvt.
+ * Пересчёт в л.с. делает сервер — приложение только передаёт выбранную единицу.
+ */
 @Composable
 fun PowerTypePicker(
     selected: String,
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val options = listOf("h" to "л.с.", "k" to "кВт")
+    val options = listOf("ls" to "л.с.", "kvt" to "кВт")
     DropdownSelector(
         label = "Ед.изм.",
         options = options,

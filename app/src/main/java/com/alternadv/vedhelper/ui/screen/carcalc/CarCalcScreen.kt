@@ -2,6 +2,7 @@ package com.alternadv.vedhelper.ui.screen.carcalc
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -10,21 +11,21 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.alternadv.vedhelper.model.VehicleTypes
 import com.alternadv.vedhelper.ui.components.CarCalcParamsInput
 import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.EnginePicker
 import com.alternadv.vedhelper.ui.components.MonthPicker
 import com.alternadv.vedhelper.ui.components.PowerTypePicker
+import com.alternadv.vedhelper.ui.components.VehicleTypePickerFromServer
 import com.alternadv.vedhelper.ui.components.YearPicker
-import com.alternadv.vedhelper.ui.components.VehicleTypePicker
+import com.alternadv.vedhelper.ui.components.bringIntoViewOnFocus
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.screen.carcalcresult.CarCalcResultViewModel
-import java.util.Locale
 
 @Composable
 fun CarCalcScreen(
@@ -40,23 +41,25 @@ fun CarCalcScreen(
     }
 
     val state by viewModel.uiState.collectAsState()
-
     val scrollState = rememberScrollState()
+    // Шапка формы прокручивается отдельно: общий ScrollState с телом формы ломал прокрутку —
+    // короткая шапка выставляла maxValue = 0 и тело не листалось (в т.ч. при открытой клавиатуре).
+    val topScrollState = rememberScrollState()
 
     Scaffold(
         topBar = {
             Column(
                 modifier = Modifier
                     .padding(horizontal = 16.dp, vertical = 3.dp)
-                    .verticalScroll(scrollState),
+                    .verticalScroll(topScrollState),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                VehicleTypePicker(
-                    vehicleTypes = VehicleTypes,
+                VehicleTypePickerFromServer(
+                    vehicles = state.vehicles.map { it.id to it.name },
                     selected = state.vehicle,
                     onChange = viewModel::onVehicleTypeChanged,
                 )
-                // --- Месяц и год в одной строке ---
+
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     MonthPicker(
                         months = state.months,
@@ -72,14 +75,17 @@ fun CarCalcScreen(
                     )
                 }
 
-                // --- Стоимость и валюта в одной строке ---
+                // Стоимость уходит в валюте currency — пересчёт делает сервер
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
-                        value = state.rawCost?.let { String.format(Locale.US, "%.0f", it) } ?: "",
-                        onValueChange = viewModel::onRawCostChanged,
+                        value = state.costInput,
+                        onValueChange = viewModel::onCostChanged,
                         label = { Text("Стоимость") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f)
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        modifier = Modifier
+                            .weight(1f)
+                            .bringIntoViewOnFocus()
                     )
                     CurrencyPicker(
                         selected = state.currency,
@@ -99,10 +105,8 @@ fun CarCalcScreen(
                 ) {
                     Button(
                         onClick = {
-                            if (viewModel.lastCarCalcParams != null) {
-                                carCalcResultViewModel.setParams(viewModel.lastCarCalcParams!!)
-                            }
-
+                            val params = viewModel.lastCarCalcParams
+                            if (params != null) carCalcResultViewModel.setParams(params)
                             viewModel.calcClick()
                         },
                         enabled = !state.isCalculating,
@@ -140,9 +144,7 @@ fun CarCalcScreen(
                     CircularProgressIndicator()
                 }
             } else {
-                if (!state.isLoading) {
-                    CarCalcContent(state, viewModel)
-                }
+                CarCalcContent(state, viewModel)
             }
         }
     }
@@ -161,32 +163,34 @@ fun CarCalcScreen(
     }
 }
 
+/**
+ * Поля строятся по ответу сервера (calc_params), поэтому новый параметр появляется в форме
+ * без обновления приложения. Отдельно обрабатываются engine (список двигателей) и power
+ * (значение + единицы измерения, пересчёт в л.с. делает API).
+ */
 @Composable
 private fun CarCalcContent(state: CarCalcState, viewModel: CarCalcViewModel) {
-
     state.calcParams.forEach { param ->
-        if (param.code != "engine" && param.code != "power") {
-            val paramValue = state.chosenParams[param.code]
-            CarCalcParamsInput(param, paramValue, viewModel::onCarCalcParamChanged)
-        } else if (param.code == "power") {
-            Row(
+        when (param.code) {
+            "engine" -> EnginePicker(
+                engines = state.calcEngines,
+                selected = state.engine ?: state.calcEngines.firstOrNull()?.id ?: "f",
+                onChange = viewModel::onEngineChanged
+            )
+
+            "power" -> Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
-                    //value = state.rawPower?.let { String.format(Locale.US, "%.0f", it) } ?: "",
-                    value = state.rawPowerInput,
-                    //onValueChange = viewModel::onRawPowerChanged,
-                    onValueChange = { newValue ->
-                        // Разрешаем только цифры и точку
-                        val filtered = newValue.replace(',', '.')
-                            .filter { it.isDigit() || it == '.' }
-
-                        viewModel.onRawPowerChanged(filtered)
-                    },
+                    value = state.powerInput,
+                    onValueChange = viewModel::onPowerChanged,
                     label = { Text("Мощность") },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    modifier = Modifier.weight(1f)
+                    singleLine = true,
+                    modifier = Modifier
+                        .weight(1f)
+                        .bringIntoViewOnFocus()
                 )
                 PowerTypePicker(
                     selected = state.powerUnit,
@@ -194,12 +198,32 @@ private fun CarCalcContent(state: CarCalcState, viewModel: CarCalcViewModel) {
                     modifier = Modifier.weight(1f)
                 )
             }
-        } else {
-            EnginePicker(
-                engines = state.calcEngines,
-                selected = state.engine ?: "f",
-                onChange = viewModel::onEngineChanged
+
+            else -> CarCalcParamsInput(
+                param = param,
+                value = state.paramValues[param.code],
+                onChange = viewModel::onParamChanged,
+                onChoiceChange = viewModel::onChoiceChanged
             )
+        }
+    }
+
+    // Как на сайте (calcauto_params.twig): чекбокс только для тягача, в calc_params его нет.
+    if (state.supportsIntl()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .toggleable(
+                    value = state.intl,
+                    role = Role.Checkbox,
+                    onValueChange = viewModel::onIntlChanged
+                )
+                .padding(vertical = 4.dp)
+        ) {
+            Checkbox(checked = state.intl, onCheckedChange = null)
+            Spacer(Modifier.width(8.dp))
+            Text("Евро-5/6, международные перевозки")
         }
     }
 }

@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.dp
 import com.alternadv.vedhelper.model.CalcParam
 
 @Composable
-fun CalcParamsInput(param: CalcParam, value: Double?, onChange: (String, String) -> Unit) {
+fun CalcParamsInput(param: CalcParam, value: String, onChange: (String, String) -> Unit) {
     val labelText = if (param.description.isNotBlank()) {
         "${param.name} (деи: ${param.description})"
     } else {
@@ -20,13 +20,14 @@ fun CalcParamsInput(param: CalcParam, value: Double?, onChange: (String, String)
     }
 
     OutlinedTextField(
-        value = value?.toString() ?: "",
+        value = value,
         onValueChange = { onChange(param.code, it) },
         label = { Text(labelText) },
         placeholder = { Text(param.dimension) },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp)
+            .bringIntoViewOnFocus()
     )
 }

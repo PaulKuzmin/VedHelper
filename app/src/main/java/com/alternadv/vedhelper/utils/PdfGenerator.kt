@@ -5,6 +5,7 @@ import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.CarCalcParamsModel
 import com.alternadv.vedhelper.model.CarCalcResultModel
+import com.alternadv.vedhelper.model.CarPartCalculation
 import com.alternadv.vedhelper.model.CarReportRows
 import com.alternadv.vedhelper.model.ReportRowModel
 import com.alternadv.vedhelper.model.VehicleTypes
@@ -41,7 +42,9 @@ object PdfGenerator {
         results: List<ReportRowModel> = emptyList(),
         result2Title: String = "",
         results2: List<ReportRowModel> = emptyList(),
-        comments: String? = null
+        comments: String? = null,
+        // Заголовок второй денежной колонки: у авто — валюта стоимости, если она не доллар
+        amountHeader: String = PDF_USD_HEADER
     ): File {
         val outFile = outputPath?.let {
             File(context.cacheDir, it)
@@ -113,7 +116,7 @@ object PdfGenerator {
             Paragraph(resultTitle).setFont(font).setFontSize(10f)
         )
         if (results.isNotEmpty()) {
-            document.add(buildTable(results, font, fontBold, false))
+            document.add(buildTable(results, font, fontBold, false, amountHeader))
         }
 
         // --- Таблица результатов 2 ---
@@ -121,7 +124,7 @@ object PdfGenerator {
             Paragraph(result2Title).setFont(font).setFontSize(10f)
         )
         if (results2.isNotEmpty()) {
-            document.add(buildTable(results2, font, fontBold, false))
+            document.add(buildTable(results2, font, fontBold, false, amountHeader))
         }
 
         // --- Параметры ---
@@ -166,7 +169,8 @@ object PdfGenerator {
         data: List<ReportRowModel>,
         fontNormal: PdfFont,
         fontBold: PdfFont,
-        use2Cols: Boolean
+        use2Cols: Boolean,
+        amountHeader: String = PDF_USD_HEADER
     ): Table {
         val table = if (use2Cols) Table(UnitValue.createPercentArray(floatArrayOf(1f, 2f)))
         else Table(UnitValue.createPercentArray(floatArrayOf(2f, 3f, 1f, 1f)))
@@ -220,7 +224,7 @@ object PdfGenerator {
             table.addHeaderCell(
                 Cell()
                     .add(
-                        Paragraph("Сумма, $")
+                        Paragraph(amountHeader)
                             .setFontSize(10f)
                             .setMarginTop(0f)
                             .setMarginBottom(0f)
@@ -656,8 +660,9 @@ fun buildReportRows(
             ReportRowModel(
                 "Итого",
                 second = "",
-                third = String.format(Locale.US, "%,.2f", calc.costRub ?: 0.0),
-                fourth = String.format(Locale.US, "%,.2f", calc.costUsd ?: 0.0),
+                // итог платежей, а не таможенная стоимость (cost_rub/cost_usd)
+                third = String.format(Locale.US, "%,.2f", calc.paymentsSummaRub ?: 0.0),
+                fourth = String.format(Locale.US, "%,.2f", calc.paymentsSummaUsd ?: 0.0),
                 bold = true
             )
         )
@@ -684,62 +689,87 @@ fun buildCarReportRows(calcResult: CarCalcResultModel?, calcParams: CarCalcParam
     calcResult.chosen.let { chosen ->
         parameters.add(ReportRowModel("ТС", vehicle ?: ""))
         parameters.add(ReportRowModel("Дата выпуска", "${month ?: ""} ${chosen.year ?: ""}"))
-        parameters.add(ReportRowModel("Стоимость, дол. США", chosen.cost ?: ""))
-        parameters.add(ReportRowModel("Объем двигателя, куб.см.", chosen.capacity ?: ""))
-        parameters.add(ReportRowModel("Мощность, л.с.", chosen.power ?: ""))
-        parameters.add(ReportRowModel("Количество мест", chosen.seats ?: ""))
-        parameters.add(ReportRowModel("Масса, кг.", chosen.weight ?: ""))
-        parameters.add(ReportRowModel("Объем багажника, куб.см.", chosen.bag ?: ""))
+        // стоимость в валюте, в которой её ввели (не всегда доллары)
+        parameters.add(ReportRowModel("Стоимость", costReportValue(calcResult.calculation, chosen)))
+        // Только заполненные поля: у легкового нет мест/массы/багажника, у гольф-кара — объёма и
+        // мощности; раньше в PDF выходили пустые строки «Количество мест», «Масса, кг.» и т.п.
+        parameters.addIfPresent("Объем двигателя, куб.см.", chosen.capacity)
+        parameters.addIfPresent(powerReportLabel(chosen.powerEdizm), chosen.power)
+        parameters.addIfPresent("Количество мест", chosen.seats)
+        parameters.addIfPresent("Масса, кг.", chosen.weight)
+        parameters.addIfPresent("Объем багажника, куб.м.", chosen.bag)
     }
 
     // ---- Результаты F ----
-    calcResult.calculation.f?.let { fCalc ->
-        fCalc.payments?.forEach { payment ->
-            resultsF.add(
-                ReportRowModel(
-                    first = payment.name,
-                    second = payment.rate,
-                    third = String.format(Locale.US, "%,.2f", payment.sumRub),
-                    fourth = String.format(Locale.US, "%,.2f", payment.sumUsd)
-                )
-            )
-        }
-        resultsF.add(
-            ReportRowModel(
-                first = "Итого",
-                second = "",
-                third = String.format(Locale.US, "%,.2f", fCalc.paymentsSumRub ?: 0.0),
-                fourth = String.format(Locale.US, "%,.2f", fCalc.paymentsSumUsd ?: 0.0),
-                bold = true
-            )
-        )
+    // Вторая денежная колонка — как на экране: валюта стоимости вместо долларов, если она не USD
+    val amountColumn = calcResult.calculation.pdfSecondAmountColumn()
+
+    val fCalc = calcResult.calculation.f
+    if (fCalc != null && fCalc.success == true) {
+        addPartRows(resultsF, fCalc, amountColumn.mode)
     }
 
     // ---- Результаты U ----
     calcResult.calculation.u?.let { uCalc ->
-        uCalc.payments?.forEach { payment ->
-            resultsU.add(
-                ReportRowModel(
-                    first = payment.name,
-                    second = payment.rate,
-                    third = String.format(Locale.US, "%,.2f", payment.sumRub),
-                    fourth = String.format(Locale.US, "%,.2f", payment.sumUsd)
-                )
-            )
-        }
-        resultsU.add(
-            ReportRowModel(
-                first = "Итого",
-                second = "",
-                third = String.format(Locale.US, "%,.2f", uCalc.paymentsSumRub ?: 0.0),
-                fourth = String.format(Locale.US, "%,.2f", uCalc.paymentsSumUsd ?: 0.0),
-                bold = true
-            )
-        )
+        if (uCalc.success == true) addPartRows(resultsU, uCalc, amountColumn.mode)
         parameters.add(ReportRowModel("Код ТНВЭД", uCalc.tnved ?: ""))
     }
 
-    return CarReportRows(parameters, resultsF, resultsU)
+    val fNote = calcResult.calculation.fDenied?.takeIf { it.isNotBlank() }
+        ?: fCalc?.takeIf { it.success != true }?.let { part ->
+            part.messages.orEmpty().joinToString(" ") { it.message }.ifBlank { "расчёт не выполнен" }
+        }
+    val uNote = calcResult.calculation.u?.takeIf { it.success != true }?.let { part ->
+        part.messages.orEmpty().joinToString(" ") { it.message }.ifBlank { "расчёт не выполнен" }
+    }
+
+    return CarReportRows(
+        parameters, resultsF, resultsU,
+        fNote = fNote, uNote = uNote,
+        amountHeader = amountColumn.header
+    )
+}
+
+private fun MutableList<ReportRowModel>.addIfPresent(label: String, value: String?) {
+    if (!value.isNullOrBlank()) add(ReportRowModel(label, value))
+}
+
+/**
+ * Платежи блока, «Итого» и после него — справочный утильсбор (в итог не входит).
+ * third — рубли, fourth — доллары или валюта стоимости ([amountMode] для [pickAmount]).
+ */
+private fun addPartRows(rows: MutableList<ReportRowModel>, part: CarPartCalculation, amountMode: String) {
+    part.regularPayments().forEach { payment ->
+        rows.add(
+            ReportRowModel(
+                first = payment.name,
+                second = payment.rate,
+                third = formatPdfSum(payment.sumRub),
+                fourth = formatPdfSum(pickAmount(amountMode, payment.sumRub, payment.sumUsd, payment.sumCur))
+            )
+        )
+    }
+    rows.add(
+        ReportRowModel(
+            first = "Итого",
+            second = "",
+            third = formatPdfSum(part.paymentsSumRub ?: 0.0),
+            fourth = formatPdfSum(
+                pickAmount(amountMode, part.paymentsSumRub, part.paymentsSumUsd ?: 0.0, part.paymentsSumCur)
+            ),
+            bold = true
+        )
+    )
+    part.referencePayments().forEach { payment ->
+        rows.add(
+            ReportRowModel(
+                first = "${referencePaymentName(payment.name)} (справочно, $REFERENCE_NOTE)",
+                second = payment.rate,
+                third = formatPdfSum(payment.sumRub),
+                fourth = formatPdfSum(pickAmount(amountMode, payment.sumRub, payment.sumUsd, payment.sumCur))
+            )
+        )
+    }
 }
 
 fun getCurrentDateTimeRu(): String {

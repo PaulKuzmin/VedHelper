@@ -1,5 +1,11 @@
 package com.alternadv.vedhelper.model
 
+/**
+ * Аварийный список видов ТС (если сервер недоступен).
+ *
+ * Основной источник — GET widget/calcauto/vehicles: список приходит с сервера, поэтому новый
+ * тип ТС появляется в приложении без обновления. Этот список нужен только офлайн.
+ */
 val VehicleTypes: Map<String, String> = mapOf(
     "car" to "ЛЕГКОВОЙ",
     "cargo" to "ГРУЗОВОЙ",
@@ -16,5 +22,8 @@ val VehicleTypes: Map<String, String> = mapOf(
     "caravan" to "АВТОПРИЦЕП",
     "house" to "ДОМ-АВТОПРИЦЕП",
     "waterbike" to "ВОДНЫЙ МОТОЦИКЛ",
-    "boat" to "КАТЕР (ЯХТА,ЛОДКА)"
+    "boat" to "КАТЕР (ЯХТА,ЛОДКА)",
+    "dumptruck" to "САМОСВАЛ",
+    "golfcar" to "ГОЛЬФ-КАР",
+    "pickup" to "ПИКАП"
 )

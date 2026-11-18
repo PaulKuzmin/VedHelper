@@ -16,10 +16,20 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CarCalcResultModel
-import com.alternadv.vedhelper.model.CarCustomsPayment
+import com.alternadv.vedhelper.model.CarPartCalculation
+import com.alternadv.vedhelper.ui.components.FabMenuListEndPadding
 import com.alternadv.vedhelper.ui.components.SegmentedButton
 import com.alternadv.vedhelper.utils.PdfGenerator
+import com.alternadv.vedhelper.utils.REFERENCE_FOOTNOTE
+import com.alternadv.vedhelper.utils.REFERENCE_NOTE
 import com.alternadv.vedhelper.utils.buildCarReportRows
+import com.alternadv.vedhelper.utils.formatSum
+import com.alternadv.vedhelper.utils.hasCurAmounts
+import com.alternadv.vedhelper.utils.needsReferenceFootnote
+import com.alternadv.vedhelper.utils.pickAmount
+import com.alternadv.vedhelper.utils.referencePaymentName
+import com.alternadv.vedhelper.utils.referencePayments
+import com.alternadv.vedhelper.utils.regularPayments
 import java.util.Locale
 
 @Composable
@@ -40,7 +50,11 @@ fun CarCalcResultScreen(
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            // Переключатель валют
+            // Переключатель валют. Третий вариант — валюта, в которой введена стоимость:
+            // сервер возвращает суммы в ней (summa_cur), приложение ничего не пересчитывает.
+            val currencyShort = data.calculation.currency?.short
+            val hasCurAmounts = data.calculation.hasCurAmounts()
+
             Row(horizontalArrangement = Arrangement.Center, modifier = Modifier.fillMaxWidth()) {
                 SegmentedButton(
                     selected = calcCurrs == "rubles",
@@ -53,38 +67,55 @@ fun CarCalcResultScreen(
                     text = "В дол.США",
                     onClick = { calcCurrs = "dollars" }
                 )
+                if (hasCurAmounts) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    SegmentedButton(
+                        selected = calcCurrs == "currency",
+                        text = "В $currencyShort",
+                        onClick = { calcCurrs = "currency" }
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            LazyColumn(modifier = Modifier.weight(1f)) {
-                // Физ. лицо
-                data.calculation.f?.let { part ->
-                    if (part.success == true) {
-                        item {
-                            PaymentsCard(
-                                title = "При оформлении на физ.лицо",
-                                payments = part.payments ?: emptyList(),
-                                totalRub = part.paymentsSumRub,
-                                totalUsd = part.paymentsSumUsd,
-                                calcCurrs = calcCurrs,
-                                onRateClick = { name, rate -> rateHint = name to rate }
-                            )
-                        }
+            // Нижний отступ списка: плавающая кнопка «Меню» висит над кнопкой «Поделиться»
+            // и иначе закрывает правый край последних строк (курсы валют, итог юрлица).
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(bottom = FabMenuListEndPadding)
+            ) {
+                // Физ. лицо: расчёт, либо причина отказа (F_denied), либо сообщения сервера
+                val fPart = data.calculation.f
+                val fDenied = data.calculation.fDenied?.takeIf { it.isNotBlank() }
+                when {
+                    fPart?.success == true -> item {
+                        PaymentsCard(
+                            title = "При оформлении на физ.лицо",
+                            part = fPart,
+                            calcCurrs = calcCurrs,
+                            onRateClick = { name, rate -> rateHint = name to rate }
+                        )
+                    }
+                    fDenied != null -> item {
+                        NoteCard(title = "При оформлении на физ.лицо", lines = listOf(fDenied))
+                    }
+                    fPart != null -> item {
+                        NoteCard(title = "При оформлении на физ.лицо", lines = partMessages(fPart))
                     }
                 }
 
-                // Юр. лицо
+                // Юр. лицо: показываем, даже если физлицо не посчиталось
                 data.calculation.u?.let { part ->
-                    if (part.success == true) {
-                        item {
+                    item {
+                        if (part.success == true) {
                             PaymentsCard(
                                 title = "При оформлении на юр.лицо",
-                                payments = part.payments ?: emptyList(),
-                                totalRub = part.paymentsSumRub,
-                                totalUsd = part.paymentsSumUsd,
+                                part = part,
                                 calcCurrs = calcCurrs,
                                 onRateClick = { name, rate -> rateHint = name to rate }
                             )
+                        } else {
+                            NoteCard(title = "При оформлении на юр.лицо", lines = partMessages(part))
                         }
                     }
                 }
@@ -127,17 +158,18 @@ fun CarCalcResultScreen(
                     val messages = collectCarMessages(data)
                     val comments = messages.joinToString(separator = "\n") { "* $it" }
 
-                    var reportData = buildCarReportRows(data, params)
+                    val reportData = buildCarReportRows(data, params)
                     val reportFile = PdfGenerator.generateCalcResultPdf(
                         context = context,
                         outputPath = "Результаты_расчета_таможенной_пошлины_тс_Альтерна.pdf",
                         title = "Результаты расчета таможенной пошлины на ТС",
                         parameters = reportData.parameters,
-                        resultTitle = "При оформлении на физическое лицо",
+                        resultTitle = sectionTitle("При оформлении на физическое лицо", reportData.resultsF, reportData.fNote),
                         results = reportData.resultsF,
-                        result2Title = "При оформлении на юридическое лицо",
+                        result2Title = sectionTitle("При оформлении на юридическое лицо", reportData.resultsU, reportData.uNote),
                         results2 = reportData.resultsU,
-                        comments = comments
+                        comments = comments,
+                        amountHeader = reportData.amountHeader
                     )
                     val uri = FileProvider.getUriForFile(
                         context,
@@ -181,23 +213,52 @@ fun CarCalcResultScreen(
     }
 }
 
+/** Заголовок раздела PDF: с таблицей — как есть, без неё — с пояснением, без раздела — пусто. */
+private fun sectionTitle(title: String, rows: List<*>, note: String?): String = when {
+    rows.isNotEmpty() -> title
+    note != null -> "$title: $note"
+    else -> ""
+}
+
+/**
+ * Примечания: сноска о перепродаже — только при справочном утильсборе (has_reference);
+ * сообщения не посчитанного блока уже в его карточке и здесь не дублируются.
+ */
 private fun collectCarMessages(data: CarCalcResultModel): List<String> {
-    val baseMessage = "Уплачивается в случае ввоза импортного автомобиля " +
-            "с целью его дальнейшей перепродажи на территории РФ " +
-            "в течение одного года с даты получения ПТС."
+    val result = mutableListOf<String>()
+    if (data.calculation.needsReferenceFootnote()) result += REFERENCE_FOOTNOTE
+    listOfNotNull(data.calculation.f, data.calculation.u)
+        .filter { it.success == true }
+        .forEach { part -> result += part.messages.orEmpty().map { it.message } }
+    return result
+}
 
-    val fMessages = data.calculation.f?.messages?.map { it.message } ?: emptyList()
-    val uMessages = data.calculation.u?.messages?.map { it.message } ?: emptyList()
+private fun partMessages(part: CarPartCalculation): List<String> =
+    part.messages.orEmpty().map { it.message }.ifEmpty { listOf("Расчёт не выполнен") }
 
-    return listOf(baseMessage) + fMessages + uMessages
+@Composable
+private fun NoteCard(title: String, lines: List<String>) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Text(title)
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                thickness = DividerDefaults.Thickness,
+                color = DividerDefaults.color
+            )
+            lines.forEach { Text(it, style = MaterialTheme.typography.bodyMedium) }
+        }
+    }
 }
 
 @Composable
 private fun PaymentsCard(
     title: String,
-    payments: List<CarCustomsPayment>,
-    totalRub: Double?,
-    totalUsd: Double?,
+    part: CarPartCalculation,
     calcCurrs: String,
     onRateClick: (String, String) -> Unit
 ) {
@@ -219,32 +280,12 @@ private fun PaymentsCard(
                 color = DividerDefaults.color
             )
 
-            payments.forEach { p ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            if (p.name.isNotBlank() && p.rate.isNotBlank()) {
-                                onRateClick(p.name, p.rate)
-                            }
-                        }
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(p.name)
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = "Подробнее о ставке",
-                            tint = Color.Gray,
-                            modifier = Modifier
-                                .padding(start = 4.dp)
-                                .size(16.dp)
-                        )
-                    }
-                    val value = if (calcCurrs == "rubles") p.sumRub else p.sumUsd
-                    Text(String.format(Locale.US, "%.2f", value))
-                }
+            part.regularPayments().forEach { p ->
+                PaymentRow(
+                    name = p.name,
+                    value = pickAmount(calcCurrs, p.sumRub, p.sumUsd, p.sumCur),
+                    onClick = { if (p.name.isNotBlank() && p.rate.isNotBlank()) onRateClick(p.name, p.rate) }
+                )
             }
 
             HorizontalDivider(
@@ -258,12 +299,73 @@ private fun PaymentsCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text("Итого:")
-                val total = if (calcCurrs == "rubles") totalRub else totalUsd
                 Text(
-                    String.format(Locale.US, "%.2f", total),
+                    formatSum(pickAmount(calcCurrs, part.paymentsSumRub, part.paymentsSumUsd, part.paymentsSumCur)),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
+
+            // Справочно: коммерческий утильсбор (при перепродаже), в итог не входит
+            val references = part.referencePayments()
+            if (references.isNotEmpty()) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 8.dp),
+                    thickness = DividerDefaults.Thickness,
+                    color = DividerDefaults.color
+                )
+                Text(
+                    "Справочно",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = Color.Gray
+                )
+                references.forEach { p ->
+                    val name = referencePaymentName(p.name)
+                    PaymentRow(
+                        name = name,
+                        subtitle = REFERENCE_NOTE,
+                        value = pickAmount(calcCurrs, p.sumRub, p.sumUsd, p.sumCur),
+                        muted = true,
+                        onClick = { if (p.rate.isNotBlank()) onRateClick(name, p.rate) }
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun PaymentRow(
+    name: String,
+    value: Double?,
+    onClick: () -> Unit,
+    subtitle: String? = null,
+    muted: Boolean = false
+) {
+    val color = if (muted) Color.Gray else Color.Unspecified
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(name, color = color, modifier = Modifier.weight(1f, fill = false))
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Подробнее о ставке",
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .padding(start = 4.dp)
+                        .size(16.dp)
+                )
+            }
+            subtitle?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = Color.Gray)
+            }
+        }
+        Text(formatSum(value), color = color, modifier = Modifier.padding(start = 8.dp))
     }
 }

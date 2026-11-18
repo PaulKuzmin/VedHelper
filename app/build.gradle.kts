@@ -1,25 +1,33 @@
 plugins {
+    // AGP 9 включает поддержку Kotlin сам — плагин kotlin.android больше не нужен
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
     namespace = "com.alternadv.vedhelper"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.alternadv.vedhelper"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 3
         versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Адрес API зависит от сборки: debug смотрит в локальный dev, release — в прод.
+    // Переопределение для устройства: ./gradlew -PdevApiHost=http://192.168.1.10:8180 …
+    val devApiHost = (project.findProperty("devApiHost") as String?) ?: "http://10.0.2.2:8180"
+
     buildTypes {
+        debug {
+            buildConfigField("String", "API_BASE_URL", "\"$devApiHost\"")
+        }
         release {
+            buildConfigField("String", "API_BASE_URL", "\"https://alternadv.com\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -38,6 +46,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     signingConfigs {
@@ -53,11 +62,6 @@ android {
     buildTypes {
         getByName("release") {
             signingConfig = signingConfigs.getByName("release")
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
         }
     }
 }
@@ -73,6 +77,8 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.moshi)
     implementation(libs.moshi.kotlin)
+    // явная версия: иначе moshi-kotlin подтягивает kotlin-reflect 1.8.22 при stdlib 2.4.x
+    implementation(libs.kotlin.reflect)
     implementation(libs.okhttp)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.androidx.navigation.runtime.android)
@@ -85,7 +91,7 @@ dependencies {
 
     implementation("com.itextpdf:itext7-core:9.2.0")
 
-    implementation(platform("ru.rustore.sdk:bom:2025.02.01"))
+    implementation(platform("ru.rustore.sdk:bom:2026.10.01"))
     implementation("ru.rustore.sdk:appupdate")
     implementation(libs.androidx.core.splashscreen)
 

@@ -18,9 +18,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CalcMessage
 import com.alternadv.vedhelper.model.CalcResultPaymentModel
+import com.alternadv.vedhelper.ui.components.FabMenuScreenEndPadding
 import com.alternadv.vedhelper.ui.components.SegmentedButton
 import com.alternadv.vedhelper.utils.PdfGenerator
 import com.alternadv.vedhelper.utils.buildReportRows
+import com.alternadv.vedhelper.utils.formatSum
 import java.util.Locale
 
 @Composable
@@ -43,7 +45,11 @@ fun CalcResultScreen(
 
     val context = LocalContext.current
 
-    LazyColumn(modifier = Modifier.padding(16.dp)) {
+    // Отступ снизу: плавающая кнопка «Меню» не должна закрывать «Поделиться» и курсы валют
+    LazyColumn(
+        modifier = Modifier.padding(horizontal = 16.dp),
+        contentPadding = PaddingValues(top = 16.dp, bottom = FabMenuScreenEndPadding)
+    ) {
         item {
             // Переключатель валют
             Row(
@@ -61,6 +67,15 @@ fun CalcResultScreen(
                     text = "В дол.США",
                     onClick = { selectedCurrency = "usd" }
                 )
+                val curInfo = calc?.currency
+                if (curInfo?.code != null && curInfo.code != "840" && calc.paymentsSummaCur != null) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    SegmentedButton(
+                        selected = selectedCurrency == "currency",
+                        text = "В ${curInfo.short ?: curInfo.code}",
+                        onClick = { selectedCurrency = "currency" }
+                    )
+                }
             }
         }
 
@@ -68,7 +83,11 @@ fun CalcResultScreen(
             item {
                 ResultSection(
                     payments = calc.payments,
-                    total = if (selectedCurrency == "rubles") calc.paymentsSummaRub else calc.paymentsSummaUsd,
+                    total = when (selectedCurrency) {
+                        "rubles" -> calc.paymentsSummaRub
+                        "usd" -> calc.paymentsSummaUsd
+                        else -> calc.paymentsSummaCur
+                    },
                     currency = selectedCurrency,
                     onRateClick = { name, rate -> rateHint = name to rate },
                     messages = calc.messages
@@ -178,7 +197,7 @@ fun ResultSection(
                                     .size(16.dp)
                             )
                         }
-                        Text(String.format(Locale.US, "%.2f", it.getAmount(currency)))
+                        Text(formatSum(it.getAmount(currency)))
                     }
                 }
             }
@@ -193,7 +212,7 @@ fun ResultSection(
             ) {
                 Text("Итого:")
                 Text(
-                    String.format(Locale.US, "%.2f", total),
+                    formatSum(total),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
@@ -210,4 +229,8 @@ fun ResultSection(
 }
 
 private fun CalcResultPaymentModel.getAmount(currency: String): Double? =
-    if (currency == "rubles") summaRub else summaUsd
+    when (currency) {
+        "rubles" -> summaRub
+        "usd" -> summaUsd
+        else -> summaCur // нет суммы в валюте — прочерк, а не доллары под её подписью
+    }

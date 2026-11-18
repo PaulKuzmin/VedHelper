@@ -16,7 +16,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+
+/** Сдвиг FAB вверх над нижней навигацией (MainAppScreen). */
+val FabMenuOffsetY: Dp = 70.dp
+
+/**
+ * Сколько места снизу экрана занимает FAB «Меню»: отступ Scaffold (16) + сдвиг + высота
+ * FloatingActionButton (56) + зазор 8. Прокручиваемое содержимое, доходящее до низа экрана,
+ * добавляет этот отступ в конец (contentPadding), чтобы последние строки не прятались под кнопкой.
+ */
+val FabMenuScreenEndPadding: Dp = 16.dp + FabMenuOffsetY + 56.dp + 8.dp
+
+/**
+ * То же для списка, под которым закреплена кнопка «Поделиться» (экран результата «Авто»):
+ * минус внешний отступ 16 и кнопка с верхним отступом (40 + 8).
+ */
+val FabMenuListEndPadding: Dp = FabMenuScreenEndPadding - 16.dp - 48.dp
 
 data class FabMenuItem(
     val label: String,

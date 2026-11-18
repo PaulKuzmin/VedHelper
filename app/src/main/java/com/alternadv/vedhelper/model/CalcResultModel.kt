@@ -22,6 +22,13 @@ data class CalcResultCalculationModel(
     @param:Json(name = "payments_summa_usd")
     val paymentsSummaUsd: Double?,
 
+    /** Итог в валюте стоимости — считает сервер, приложение не пересчитывает. */
+    @param:Json(name = "payments_summa_cur")
+    val paymentsSummaCur: Double? = null,
+
+    /** Валюта, в которой задана стоимость (bлок calculation.currency). */
+    val currency: CalcCurrencyInfo? = null,
+
     val payments: List<CalcResultPaymentModel>?,
     val currencies: Map<String, CalcCurrencyRate>?,
     val messages: List<CalcMessage>?,
@@ -36,5 +43,9 @@ data class CalcResultPaymentModel (
     val summaRub: Double?,
 
     @param:Json(name = "summa_usd")
-    val summaUsd: Double?
+    val summaUsd: Double?,
+
+    /** Сумма в валюте стоимости. */
+    @param:Json(name = "summa_cur")
+    val summaCur: Double? = null
 )

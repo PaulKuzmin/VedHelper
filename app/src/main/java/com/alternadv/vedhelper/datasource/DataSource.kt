@@ -1,6 +1,7 @@
 package com.alternadv.vedhelper.datasource
 
 import android.util.Log
+import com.alternadv.vedhelper.BuildConfig
 import com.alternadv.vedhelper.model.ResponseModel
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -15,13 +16,23 @@ import com.alternadv.vedhelper.utils.FlexibleStringAdapter
 import java.io.IOException
 import java.lang.reflect.Type
 import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 object DataSource {
-    const val BASE_URL = "https://alternadv.com"
+    /**
+     * Адрес API берётся из сборки: debug → локальный dev, release → прод.
+     * Задаётся в app/build.gradle.kts (buildConfigField API_BASE_URL).
+     */
+    val BASE_URL: String = BuildConfig.API_BASE_URL.trimEnd('/')
 
-    private val client = OkHttpClient()
+    private val client: OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(15, TimeUnit.SECONDS)
+        .readTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(30, TimeUnit.SECONDS)
+        .callTimeout(45, TimeUnit.SECONDS)
+        .build()
     val moshi = Moshi.Builder()
         .add(FlexibleStringAdapter)
         .add(FlexibleBooleanAdapter)
@@ -77,14 +88,28 @@ object DataSource {
         return adapter.fromJson(responseStr)
     }
 
+    /**
+     * Собирает URL: кодирует сегменты пути и параметры, добавляет json=1.
+     *
+     * ВАЖНО: вызывающий код передаёт путь и значения СЫРЫМИ (без URLEncoder). Сегменты пути
+     * кодируются здесь, причём пробел становится %20, а не «+» (плюс в пути означает плюс,
+     * а не пробел — раньше поиск «стиральная машина» уходил как «стиральная+машина»).
+     */
     fun buildUrl(path: String, queryParams: Map<String, String>): String {
+        val encodedPath = path.trimStart('/')
+            .split('/')
+            .joinToString("/") { encodeSegment(it) }
+
         val query = queryParams
             .filterValues { it.isNotEmpty() }
-            .map { (key, value) -> "${URLEncoder.encode(key, "UTF-8")}=${URLEncoder.encode(value, "UTF-8")}" }
+            .map { (key, value) -> "${encodeSegment(key)}=${encodeSegment(value)}" }
             .joinToString("&")
 
-        return "${BASE_URL}/$path${if (query.isNotEmpty()) "?$query&json=1" else "?json=1"}"
+        return "${BASE_URL}/$encodedPath${if (query.isNotEmpty()) "?$query&json=1" else "?json=1"}"
     }
+
+    private fun encodeSegment(value: String): String =
+        URLEncoder.encode(value, "UTF-8").replace("+", "%20")
 
     suspend fun executeAsync(request: Request): String =
         suspendCancellableCoroutine { cont ->
@@ -99,7 +124,7 @@ object DataSource {
                         if (!it.isSuccessful) {
                             cont.resumeWithException(IOException("HTTP error: ${it.code}"))
                         } else {
-                            cont.resume(it.body.string() ?: "")
+                            cont.resume(it.body.string())
                         }
                     }
                 }

@@ -12,5 +12,7 @@ data class ExampleItem(
     val id: String,
     val code: String,
     val name: String,
-    val rel: String
+    // сервер (dev и прод) поле rel не отдаёт: обязательное поле валило разбор всего ответа,
+    // и поиск примеров всегда показывал «ничего не найдено»
+    val rel: String? = null
 )

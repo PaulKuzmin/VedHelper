@@ -17,7 +17,9 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         maven {
-            url = uri("https://artifactory-external.vkpartner.ru/artifactory/maven")
+            // Актуальный репозиторий RuStore SDK (документация: rustore.ru/help/sdk/updates/kotlin-java/10-5-2)
+            // Старый artifactory-external.vkpartner.ru отключён.
+            url = uri("https://nexus-external.rustore.ru/repository/maven-rustore-exposed")
         }
     }
 }

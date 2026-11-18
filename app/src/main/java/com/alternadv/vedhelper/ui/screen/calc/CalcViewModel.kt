@@ -6,7 +6,6 @@ import com.alternadv.vedhelper.datasource.CalcSource
 import com.alternadv.vedhelper.model.CalcParamsModel
 import com.alternadv.vedhelper.model.CalcResultModel
 import com.alternadv.vedhelper.model.Chosen
-import com.alternadv.vedhelper.utils.CurrencyConverter
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -80,7 +79,7 @@ class CalcViewModel : ViewModel() {
         viewModelScope.launch {
             try {
 
-                val paramMap = chosen?.toParamMap() ?: emptyMap()
+                val paramMap = chosen?.toParamMap(_uiState.value.currency) ?: emptyMap()
                 val paramsDeferred = async { CalcSource.getParams(code, paramMap) }
                 val statsDeferred = async { CalcSource.getStats(code, paramMap) }
 
@@ -145,28 +144,11 @@ class CalcViewModel : ViewModel() {
     }
 
     fun onCostChanged(input: String) {
-        val value = input.toDoubleOrNull()
-        _uiState.update {
-            //it.copy(chosenParams = it.chosenParams.copy(paramCost = value))
-            it.copy(cost = value)
-        }
+        _uiState.update { it.withCostInput(input) }
     }
 
     fun onCalcParamChanged(code: String, value: String) {
-        val doubleValue = value.toDoubleOrNull()
-        _uiState.update { state ->
-            val updatedAddons = state.chosenParams.addons?.toMutableMap() ?: mutableMapOf()
-
-            if (doubleValue != null) {
-                updatedAddons[code] = doubleValue
-            } else {
-                updatedAddons.remove(code)
-            }
-
-            state.copy(
-                chosenParams = state.chosenParams.copy(addons = updatedAddons)
-            )
-        }
+        _uiState.update { it.withAddonInput(code, value) }
     }
 
     fun onSpecialChanged(type: String, id: String) {
@@ -197,16 +179,13 @@ class CalcViewModel : ViewModel() {
 
             try {
 
-                val usdCost = CurrencyConverter.convertToUsd(
-                    _uiState.value.cost ?: 0.0,
-                    _uiState.value.currency
-                )
-
+                // Стоимость НЕ конвертируем: сервер принимает её в валюте `currency`
+                // и пересчитывает сам (иначе терялась точность на округлении).
                 _uiState.update {
-                    it.copy(chosenParams = it.chosenParams.copy(paramCost = usdCost))
+                    it.copy(chosenParams = it.chosenParams.copy(paramCost = it.cost))
                 }
 
-                val paramMap = _uiState.value.chosenParams.toParamMap()
+                val paramMap = _uiState.value.chosenParams.toParamMap(_uiState.value.currency)
                 val calcDeferred = async { CalcSource.getCalc(code, paramMap) }
                 val result = calcDeferred.await()
 
@@ -258,13 +237,14 @@ class CalcViewModel : ViewModel() {
         _uiState.update { it.copy(errorMessage = null) }
     }
 
-    fun Chosen.toParamMap(): Map<String, String> {
+    fun Chosen.toParamMap(currency: String): Map<String, String> {
         val map = mutableMapOf<String, String>()
         map["code"] = code
         map["direction"] = direction
         map["country"] = country
+        map["currency"] = currency
         paramCost?.let { map["param_cost"] = String.format(Locale.US, "%.4f", it) }
-        map["json"] = "1"
+        // json=1 добавляет DataSource.buildUrl
         specials?.forEach { (key, value) -> map["special_$key"] = value }
         addons?.forEach { (key, value) -> map["param_$key"] = value.toString() }
         return map

@@ -3,6 +3,8 @@ package com.alternadv.vedhelper.ui
 import android.content.Intent
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.consumeWindowInsets
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -36,6 +38,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.alternadv.vedhelper.ui.components.ExpandableFabMenu
 import com.alternadv.vedhelper.ui.components.FabMenuItem
+import com.alternadv.vedhelper.ui.components.FabMenuOffsetY
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.navigation.BottomNavigationBar
 import com.alternadv.vedhelper.ui.navigation.DrawerContent
@@ -142,7 +145,7 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
             //
             floatingActionButton = {
                 ExpandableFabMenu(
-                    modifier = Modifier.offset(y = (-70).dp),
+                    modifier = Modifier.offset(y = -FabMenuOffsetY),
                     items = listOf(
                         FabMenuItem(
                             "Позвонить",
@@ -224,7 +227,14 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
             NavHost(
                 navController = navController,
                 startDestination = BottomNavItem.Calc.route,
-                modifier = Modifier.padding(innerPadding)
+                // Edge-to-edge (targetSdk 35+): adjustResize окно не сжимает, клавиатуру учитываем
+                // сами. Отступы Scaffold (нижняя навигация уже выше клавиатуры по высоте) помечаем
+                // поглощёнными, и imePadding добавляет только ту часть клавиатуры, что выше них.
+                // Так формы калькуляторов сжимаются до клавиатуры, а «Рассчитать» остаётся видна.
+                modifier = Modifier
+                    .padding(innerPadding)
+                    .consumeWindowInsets(innerPadding)
+                    .imePadding()
             ) {
                 composable(BottomNavItem.Contacts.route) { ContactsScreen() }
                 composable(BottomNavItem.Tnved.route) { TnvedScreen(navController) }

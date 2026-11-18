@@ -20,9 +20,9 @@ import com.alternadv.vedhelper.ui.components.CountryPicker
 import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.DirectionPicker
 import com.alternadv.vedhelper.ui.components.DropdownSelector
+import com.alternadv.vedhelper.ui.components.bringIntoViewOnFocus
 import com.alternadv.vedhelper.ui.navigation.BottomNavItem
 import com.alternadv.vedhelper.ui.screen.calcresult.CalcResultViewModel
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -209,11 +209,13 @@ private fun CalcContent(state: CalcState, viewModel: CalcViewModel) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         OutlinedTextField(
-            value = state.cost?.let { String.format(Locale.US, "%.0f", it) } ?: "",
+            value = state.costInput,
             onValueChange = viewModel::onCostChanged,
             label = { Text("Стоимость") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.weight(1f)
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+            modifier = Modifier
+                .weight(1f)
+                .bringIntoViewOnFocus()
         )
 
         CurrencyPicker(
@@ -225,8 +227,7 @@ private fun CalcContent(state: CalcState, viewModel: CalcViewModel) {
 
     // Дополнительные параметры
     state.calcParams.forEach { param ->
-        val paramValue = state.chosenParams.addons?.get(param.code)
-        CalcParamsInput(param, paramValue, viewModel::onCalcParamChanged)
+        CalcParamsInput(param, state.addonInputs[param.code].orEmpty(), viewModel::onCalcParamChanged)
     }
 
     // Особые условия
