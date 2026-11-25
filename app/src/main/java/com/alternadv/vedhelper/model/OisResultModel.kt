@@ -13,6 +13,17 @@ data class OisResultModel(
     val oisDescription: Map<String, String>?
 )
 
+/**
+ * Картинка знака ОИС. Сервер отдаёт объект {src,width,height,placeholder} (или пустую строку, если картинки нет);
+ * раньше в модели было String — из-за этого весь поиск РОИС падал на разборе ответа и показывал «Ничего не найдено».
+ */
+data class OisImageModel(
+    val src: String?,
+    val width: Int? = null,
+    val height: Int? = null,
+    val placeholder: String? = null
+)
+
 data class OisModel(
     //Рег. номер
     val regnom: String?,
@@ -52,6 +63,6 @@ data class OisModel(
     @param:Json(name = "g33")
     val g33: String?,
 
-    //Имя изображения
-    val image: String?
+    //Картинка знака (объект; пустая строка/массив/null — картинки нет)
+    val image: OisImageModel? = null
 )

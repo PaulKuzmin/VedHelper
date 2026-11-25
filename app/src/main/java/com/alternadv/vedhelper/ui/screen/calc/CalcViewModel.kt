@@ -80,12 +80,16 @@ class CalcViewModel : ViewModel() {
             try {
 
                 val paramMap = chosen?.toParamMap(_uiState.value.currency) ?: emptyMap()
-                val paramsDeferred = async { CalcSource.getParams(code, paramMap) }
-                val statsDeferred = async { CalcSource.getStats(code, paramMap) }
+                // runCatching внутри async: сбой одного запроса не должен ронять приложение
+                // (при недоступном сервере async-ребёнок отменял viewModelScope и был FATAL EXCEPTION: main)
+                val paramsDeferred = async { runCatching { CalcSource.getParams(code, paramMap) } }
+                val statsDeferred = async { runCatching { CalcSource.getStats(code, paramMap) } }
 
-                val response = paramsDeferred.await()
+                val paramsResult = paramsDeferred.await()
+                val statsResult = statsDeferred.await()
+                val response = paramsResult.getOrNull()
                 lastCalcParams = response
-                val stats = statsDeferred.await()
+                val stats = statsResult.getOrNull()
 
                 val countries = response?.countries ?: emptyList()
                 val calcParams = response?.calcParams?.values?.toList() ?: emptyList()
@@ -108,7 +112,13 @@ class CalcViewModel : ViewModel() {
                         )
                     }
                 } else {
-                    // TODO: сообщение что не нашли
+                    _uiState.update {
+                        it.copy(
+                            isLoading = false,
+                            errorMessage = paramsResult.exceptionOrNull()?.message
+                                ?: "Код ТН ВЭД не найден или сервер недоступен. Проверьте соединение и попробуйте ещё раз."
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update {
@@ -186,8 +196,8 @@ class CalcViewModel : ViewModel() {
                 }
 
                 val paramMap = _uiState.value.chosenParams.toParamMap(_uiState.value.currency)
-                val calcDeferred = async { CalcSource.getCalc(code, paramMap) }
-                val result = calcDeferred.await()
+                // без async: одиночный запрос, ошибку ловит try/catch ниже (сбой child-корутины ронял приложение)
+                val result = CalcSource.getCalc(code, paramMap)
 
                 _uiState.update { it.copy(isCalculating = false) }
 

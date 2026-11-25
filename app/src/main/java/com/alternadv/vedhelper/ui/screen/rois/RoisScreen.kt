@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImagePainter
 import coil.compose.rememberAsyncImagePainter
+import com.alternadv.vedhelper.datasource.DataSource
 import com.alternadv.vedhelper.model.OisModel
 
 @Composable
@@ -145,19 +146,23 @@ fun RoisItem(item: OisModel) {
             item.g3112?.takeIf { it.isNotBlank() }?.let { LabeledValue("Наименование", it) }
             item.dateend?.takeIf { it.isNotBlank() }?.let { LabeledValue("Срок внесения в реестр", it) }
 
-            val imageUrl = "https://alternadv.com/img/ois/${item.image}"
-            val painter = rememberAsyncImagePainter(model = imageUrl)
-            val state = painter.state
+            // src приходит в объекте image: "/img-ois/..." (новый формат) или "/img/ois/....jpg"; база — из сборки
+            val imageSrc = item.image?.src
+            if (!imageSrc.isNullOrBlank()) {
+                val imageUrl = DataSource.BASE_URL + imageSrc
+                val painter = rememberAsyncImagePainter(model = imageUrl)
+                val state = painter.state
 
-            if (state !is AsyncImagePainter.State.Error) {
-                Image(
-                    painter = painter,
-                    contentDescription = "Изображение",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(150.dp)
-                        .padding(top = 8.dp)
-                )
+                if (state !is AsyncImagePainter.State.Error) {
+                    Image(
+                        painter = painter,
+                        contentDescription = "Изображение",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(150.dp)
+                            .padding(top = 8.dp)
+                    )
+                }
             }
 
             Spacer(Modifier.height(12.dp))

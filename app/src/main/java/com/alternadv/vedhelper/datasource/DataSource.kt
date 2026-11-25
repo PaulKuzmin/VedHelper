@@ -11,6 +11,7 @@ import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.RequestBody.Companion.toRequestBody
 import com.alternadv.vedhelper.utils.EmptyObjectAsArrayAdapterFactory
+import com.alternadv.vedhelper.utils.OisImageAdapterFactory
 import com.alternadv.vedhelper.utils.FlexibleBooleanAdapter
 import com.alternadv.vedhelper.utils.FlexibleStringAdapter
 import java.io.IOException
@@ -37,6 +38,7 @@ object DataSource {
         .add(FlexibleStringAdapter)
         .add(FlexibleBooleanAdapter)
         .add(EmptyObjectAsArrayAdapterFactory())
+        .add(OisImageAdapterFactory())
         .add(KotlinJsonAdapterFactory())
         .build()!!
 
