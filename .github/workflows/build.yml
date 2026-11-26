@@ -5,6 +5,11 @@ on:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      upload_to_rustore:
+        description: 'Загрузить AAB в RuStore'
+        type: boolean
+        default: false
 
 jobs:
   build:
@@ -51,6 +56,7 @@ jobs:
           path: app/build/outputs/bundle/release/app-release.aab
 
       - name: Upload to RuStore
+        if: ${{ inputs.upload_to_rustore == true }}
         run: |
           chmod +x ./rustore-deploy.sh
           ./rustore-deploy.sh
