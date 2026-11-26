@@ -49,7 +49,7 @@ fun pickAmount(mode: String, rub: Double?, usd: Double?, cur: Double?): Double? 
 
 /** Нет суммы — прочерк, а не доллары под подписью другой валюты. */
 fun formatSum(value: Double?): String =
-    value?.let { String.format(Locale.US, "%.2f", it) } ?: "—"
+    value?.let { String.format(Locale.US, "%,.2f", it) } ?: "—"
 
 private val CURRENCY_SHORT = mapOf(
     "840" to "USD",

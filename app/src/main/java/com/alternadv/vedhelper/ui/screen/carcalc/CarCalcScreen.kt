@@ -16,6 +16,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.alternadv.vedhelper.model.vehicleTypeLabel
 import com.alternadv.vedhelper.ui.components.CarCalcParamsInput
 import com.alternadv.vedhelper.ui.components.CurrencyPicker
 import com.alternadv.vedhelper.ui.components.EnginePicker
@@ -55,7 +56,7 @@ fun CarCalcScreen(
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 VehicleTypePickerFromServer(
-                    vehicles = state.vehicles.map { it.id to it.name },
+                    vehicles = state.vehicles.map { it.id to vehicleTypeLabel(it.name) },
                     selected = state.vehicle,
                     onChange = viewModel::onVehicleTypeChanged,
                 )

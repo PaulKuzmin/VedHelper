@@ -147,8 +147,8 @@ class CarCalcResultDisplayTest {
         val usd = 3000.0
         assertNull(pickAmount("currency", rub = 246454.8, usd = usd, cur = null))
         assertEquals("—", formatSum(pickAmount("currency", 246454.8, usd, null)))
-        assertEquals("3000.00", formatSum(pickAmount("dollars", 246454.8, usd, null)))
-        assertEquals("2250.00", formatSum(pickAmount("currency", 1.0, 2.0, 2250.0)))
+        assertEquals("3,000.00", formatSum(pickAmount("dollars", 246454.8, usd, null)))
+        assertEquals("2,250.00", formatSum(pickAmount("currency", 1.0, 2.0, 2250.0)))
     }
 
     // --------------------------------------------------------------------- PDF

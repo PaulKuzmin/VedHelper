@@ -27,3 +27,7 @@ val VehicleTypes: Map<String, String> = mapOf(
     "golfcar" to "ГОЛЬФ-КАР",
     "pickup" to "ПИКАП"
 )
+
+/** Названия с сервера приходят капсом («ЛЕГКОВОЙ»); в UI показываем как обычный текст. */
+fun vehicleTypeLabel(name: String): String =
+    name.lowercase().replaceFirstChar { it.titlecase() }

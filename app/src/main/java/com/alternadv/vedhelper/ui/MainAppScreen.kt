@@ -100,6 +100,11 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         BottomNavItem.TnvedCode.route,
         BottomNavItem.Contacts.route
     )
+    // на результатах FAB перекрывает суммы — там его не показываем
+    val resultScreens = listOf(
+        BottomNavItem.CalcResult.route,
+        BottomNavItem.CarCalcResult.route
+    )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val rawRoute = navBackStackEntry?.destination?.route.orEmpty()
@@ -144,7 +149,8 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         Scaffold(
             //
             floatingActionButton = {
-                ExpandableFabMenu(
+                if (currentRoute !in resultScreens) {
+                    ExpandableFabMenu(
                     modifier = Modifier.offset(y = -FabMenuOffsetY),
                     items = listOf(
                         FabMenuItem(
@@ -189,6 +195,7 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
                         }
                     )
                 )
+                }
             },
             //
             topBar = {

@@ -65,12 +65,12 @@ private fun CompanyHeader() {
             Text(
                 "Транспортно-логистическая компания «Альтерна» - таможенный представитель с многолетним успешным опытом работы в сфере ВЭД.",
                 style = MaterialTheme.typography.bodyLarge, // увеличили размер
-                textAlign = TextAlign.Justify // выравнивание по ширине
+                textAlign = TextAlign.Start
             )
             Text(
                 "Мы занимаемся таможенным оформлением и доставкой грузов любой категории из всех стран Азии (Китай, Корея, Япония и т.д.) в Россию.",
                 style = MaterialTheme.typography.bodyLarge, // увеличили размер
-                textAlign = TextAlign.Justify // выравнивание по ширине
+                textAlign = TextAlign.Start
             )
         }
     }
