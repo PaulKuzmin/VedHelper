@@ -55,6 +55,11 @@ fun CarCalcScreen(
                     .verticalScroll(topScrollState),
                 verticalArrangement = Arrangement.spacedBy(5.dp)
             ) {
+                Text(
+                    "Автомобиль",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
                 VehicleTypePickerFromServer(
                     vehicles = state.vehicles.map { it.id to vehicleTypeLabel(it.name) },
                     selected = state.vehicle,
@@ -76,6 +81,11 @@ fun CarCalcScreen(
                     )
                 }
 
+                Text(
+                    "Стоимость",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(top = 8.dp)
+                )
                 // Стоимость уходит в валюте currency — пересчёт делает сервер
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
@@ -171,6 +181,11 @@ fun CarCalcScreen(
  */
 @Composable
 private fun CarCalcContent(state: CarCalcState, viewModel: CarCalcViewModel) {
+    Text(
+        "Параметры",
+        style = MaterialTheme.typography.titleMedium,
+        modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+    )
     state.calcParams.forEach { param ->
         when (param.code) {
             "engine" -> EnginePicker(

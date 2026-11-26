@@ -1,7 +1,10 @@
 package com.alternadv.vedhelper.ui.screen.examples
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -73,9 +76,11 @@ fun ExamplesScreen(
         if (state.isShowHint) {
             Card(modifier = Modifier.padding(vertical = 8.dp)) {
                 Column(Modifier.padding(16.dp), horizontalAlignment = Alignment.Start) {
-                    Text("Не знаете код ТН ВЭД товара?")
+                    Text("Не знаете код ТН ВЭД товара?", style = MaterialTheme.typography.titleMedium)
+                    Spacer(Modifier.height(4.dp))
                     Text("Подберите его по наименованию или описанию товара.")
-                    Text("Или наоборот — найдите описание по коду ТН ВЭД.")
+                    Text("Попробуйте популярный запрос:")
+                    PopularQueries { viewModel.onSearchInput(it) }
                 }
             }
         }
@@ -172,6 +177,27 @@ fun parseHtml(input: String): AnnotatedString {
                 append(clean[i])
                 i++
             }
+        }
+    }
+}
+
+@Composable
+private fun PopularQueries(onQuery: (String) -> Unit) {
+    val queries = listOf("телефон", "одежда", "автозапчасти", "мебель", "оборудование")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        queries.forEach { query ->
+            AssistChip(
+                onClick = { onQuery(query) },
+                label = { Text(query) },
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
         }
     }
 }

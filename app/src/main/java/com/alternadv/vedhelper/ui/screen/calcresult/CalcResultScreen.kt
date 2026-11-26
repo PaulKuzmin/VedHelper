@@ -18,7 +18,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CalcMessage
 import com.alternadv.vedhelper.model.CalcResultPaymentModel
-import com.alternadv.vedhelper.ui.components.FabMenuScreenEndPadding
+import com.alternadv.vedhelper.ui.components.CalcDisclaimer
+import com.alternadv.vedhelper.ui.components.ContactOrderSheet
+import com.alternadv.vedhelper.ui.components.OrderCtaButton
 import com.alternadv.vedhelper.ui.components.SegmentedButton
 import com.alternadv.vedhelper.utils.PdfGenerator
 import com.alternadv.vedhelper.utils.buildReportRows
@@ -34,6 +36,7 @@ fun CalcResultScreen(
 
     var selectedCurrency by remember { mutableStateOf("rubles") }
     var rateHint by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var showOrderSheet by remember { mutableStateOf(false) }
 
     if (result == null) {
         Text("Нет данных для отображения", modifier = Modifier.padding(16.dp))
@@ -45,10 +48,10 @@ fun CalcResultScreen(
 
     val context = LocalContext.current
 
-    // Отступ снизу: плавающая кнопка «Меню» не должна закрывать «Поделиться» и курсы валют
+    // FAB на результатах скрыт; снизу нужен обычный воздух.
     LazyColumn(
         modifier = Modifier.padding(horizontal = 16.dp),
-        contentPadding = PaddingValues(top = 16.dp, bottom = FabMenuScreenEndPadding)
+        contentPadding = PaddingValues(top = 16.dp, bottom = 24.dp)
     ) {
         item {
             // Переключатель валют
@@ -113,7 +116,13 @@ fun CalcResultScreen(
         }
 
         item {
-            Button(
+            Spacer(Modifier.height(4.dp))
+            OrderCtaButton(text = "Заказать растаможку", onClick = { showOrderSheet = true })
+            CalcDisclaimer(Modifier.padding(top = 8.dp, bottom = 4.dp))
+        }
+
+        item {
+            OutlinedButton(
                 onClick = {
                     val comments = result?.calculation?.messages
                         ?.map { it.message }
@@ -151,6 +160,15 @@ fun CalcResultScreen(
                 Text("Поделиться расчетом")
             }
         }
+    }
+
+    if (showOrderSheet) {
+        ContactOrderSheet(
+            onDismiss = { showOrderSheet = false },
+            serviceLabel = "Товары и доставка",
+            whatsAppUrl = com.alternadv.vedhelper.ui.components.GOODS_WHATSAPP_URL,
+            telegramUrl = com.alternadv.vedhelper.ui.components.GOODS_TELEGRAM_URL
+        )
     }
 
     rateHint?.let { (title, rate) ->
@@ -208,12 +226,18 @@ fun ResultSection(
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                Text("Итого:")
+                Text(
+                    "Итого к уплате",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     formatSum(total),
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
         }

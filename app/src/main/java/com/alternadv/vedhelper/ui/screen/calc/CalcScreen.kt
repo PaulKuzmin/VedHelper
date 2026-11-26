@@ -136,49 +136,36 @@ fun CalcScreen(
 
 @Composable
 private fun HintCard(navController: NavController) {
-    Column {
-        Card {
-            Column(Modifier.padding(16.dp)) {
-                Text("Не нашли или не знаете код?", style = MaterialTheme.typography.bodyMedium)
-                Text("Воспользуйтесь справочником или примерами.", style = MaterialTheme.typography.bodyMedium)
-                Spacer(modifier = Modifier.height(12.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    Button(onClick = {
-                        navController.navigate(BottomNavItem.Tnved.route)
-                    }) {
-                        Icon(BottomNavItem.Tnved.icon, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(BottomNavItem.Tnved.label)
-                    }
-                    Button(onClick = {
-                        navController.navigate(BottomNavItem.Examples.route)
-                    }) {
-                        Icon(BottomNavItem.Examples.icon, contentDescription = null)
-                        Spacer(Modifier.width(8.dp))
-                        Text(BottomNavItem.Examples.label)
-                    }
-                }
-            }
-        }
-
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
+    Card(modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp)) {
+            Text("Не знаете код?", style = MaterialTheme.typography.titleMedium)
+            Spacer(Modifier.height(4.dp))
+            Text(
+                "Введите 10-значный код ТН ВЭД — параметры расчёта появятся автоматически. Если кода нет, найдите его по описанию.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(Modifier.height(12.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Text(
-                    text = "Справочник ТН ВЭД поможет вам точно подобрать код ТН ВЭД, а также получить дополнительную информацию по товару. " +
-                            "В частности, в справочнике вы быстро найдете сведения о размерах ставок импортных и экспортных пошлины, акцизов, НДС и других платежей.",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                OutlinedButton(
+                    onClick = { navController.navigate(BottomNavItem.Tnved.route) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(BottomNavItem.Tnved.icon, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("ТН ВЭД")
+                }
+                OutlinedButton(
+                    onClick = { navController.navigate(BottomNavItem.Examples.route) },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(BottomNavItem.Examples.icon, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Примеры")
+                }
             }
         }
     }

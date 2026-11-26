@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountTree
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.FormatListNumbered
 import androidx.compose.material.icons.filled.SubdirectoryArrowRight
@@ -95,19 +96,32 @@ fun TnvedScreen(
 
 @Composable
 private fun NodeCard(node: TnvedNodeModel, onClick: () -> Unit) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp)
-            .clickable { onClick() }
-    ) {
-        Column(Modifier.padding(16.dp)) {
-            val codeText = buildString {
-                append(node.kod ?: "")
-                if (!node.kodplus.isNullOrBlank()) append(" ${node.kodplus}")
-                append(" ${node.name}")
+    val code = listOfNotNull(
+        node.kod?.takeIf { it.isNotBlank() },
+        node.kodplus?.takeIf { it.isNotBlank() }
+    ).joinToString(" ")
+    Surface(onClick = onClick, modifier = Modifier.fillMaxWidth(), color = androidx.compose.ui.graphics.Color.Transparent) {
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(Modifier.weight(1f)) {
+                    if (code.isNotBlank()) {
+                        Text(code, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Text(node.name.orEmpty(), style = MaterialTheme.typography.bodyMedium)
+                }
+                Icon(
+                    imageVector = Icons.Default.ChevronRight,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant
+                )
             }
-            Text(codeText.trim())
+            HorizontalDivider(
+                thickness = DividerDefaults.Thickness,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            )
         }
     }
 }

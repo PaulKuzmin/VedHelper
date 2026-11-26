@@ -17,7 +17,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import com.alternadv.vedhelper.model.CarCalcResultModel
 import com.alternadv.vedhelper.model.CarPartCalculation
-import com.alternadv.vedhelper.ui.components.FabMenuListEndPadding
+import com.alternadv.vedhelper.ui.components.CalcDisclaimer
+import com.alternadv.vedhelper.ui.components.ContactOrderSheet
+import com.alternadv.vedhelper.ui.components.OrderCtaButton
 import com.alternadv.vedhelper.ui.components.SegmentedButton
 import com.alternadv.vedhelper.utils.PdfGenerator
 import com.alternadv.vedhelper.utils.REFERENCE_FOOTNOTE
@@ -41,6 +43,7 @@ fun CarCalcResultScreen(
 
     var calcCurrs by remember { mutableStateOf("rubles") }
     var rateHint by remember { mutableStateOf<Pair<String, String>?>(null) }
+    var showOrderSheet by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -78,11 +81,10 @@ fun CarCalcResultScreen(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-            // Нижний отступ списка: плавающая кнопка «Меню» висит над кнопкой «Поделиться»
-            // и иначе закрывает правый край последних строк (курсы валют, итог юрлица).
+            // FAB на результатах скрыт; снизу нужен обычный воздух.
             LazyColumn(
                 modifier = Modifier.weight(1f),
-                contentPadding = PaddingValues(bottom = FabMenuListEndPadding)
+                contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 // Физ. лицо: расчёт, либо причина отказа (F_denied), либо сообщения сервера
                 val fPart = data.calculation.f
@@ -153,7 +155,10 @@ fun CarCalcResultScreen(
                     }
                 }
             }
-            Button(
+            Spacer(Modifier.height(8.dp))
+            OrderCtaButton(text = "Заказать автомобиль", onClick = { showOrderSheet = true })
+            CalcDisclaimer(Modifier.padding(top = 8.dp, bottom = 4.dp))
+            OutlinedButton(
                 onClick = {
                     val messages = collectCarMessages(data)
                     val comments = messages.joinToString(separator = "\n") { "* $it" }
@@ -197,6 +202,15 @@ fun CarCalcResultScreen(
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
         }
+    }
+
+    if (showOrderSheet) {
+        ContactOrderSheet(
+            onDismiss = { showOrderSheet = false },
+            serviceLabel = "Авто",
+            whatsAppUrl = com.alternadv.vedhelper.ui.components.AUTO_WHATSAPP_URL,
+            telegramUrl = com.alternadv.vedhelper.ui.components.AUTO_TELEGRAM_URL
+        )
     }
 
     rateHint?.let { (title, rate) ->
@@ -296,12 +310,18 @@ private fun PaymentsCard(
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.Bottom
             ) {
-                Text("Итого:")
+                Text(
+                    "Итого к уплате",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Text(
                     formatSum(pickAmount(calcCurrs, part.paymentsSumRub, part.paymentsSumUsd, part.paymentsSumCur)),
-                    style = MaterialTheme.typography.bodyLarge
+                    style = MaterialTheme.typography.displaySmall,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 

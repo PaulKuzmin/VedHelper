@@ -3,8 +3,11 @@ package com.alternadv.vedhelper.ui.screen.rois
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -83,6 +86,7 @@ fun RoisScreen(viewModel: RoisViewModel = viewModel()) {
                                     "чтобы убедиться в их правовой охране и уникальности.",
                             style = MaterialTheme.typography.bodyMedium
                         )
+                        PopularQueries { viewModel.onSearchInput(it) }
                     }
                 }
             }
@@ -212,5 +216,26 @@ fun LabeledValue(label: String, value: String) {
     Column(modifier = Modifier.padding(vertical = 4.dp)) {
         Text(text = label, style = MaterialTheme.typography.labelMedium)
         Text(text = value, style = MaterialTheme.typography.bodyMedium)
+    }
+}
+
+@Composable
+private fun PopularQueries(onQuery: (String) -> Unit) {
+    val queries = listOf("nike", "apple", "coca-cola", "samsung")
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 8.dp)
+            .horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        queries.forEach { query ->
+            AssistChip(
+                onClick = { onQuery(query) },
+                label = { Text(query) },
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                colors = AssistChipDefaults.assistChipColors(containerColor = MaterialTheme.colorScheme.surface)
+            )
+        }
     }
 }

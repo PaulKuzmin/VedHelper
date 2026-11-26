@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alternadv.vedhelper.model.ContactsModel
+import com.alternadv.vedhelper.ui.components.ContactActionTiles
 import androidx.core.net.toUri
 
 @Composable
@@ -46,6 +47,9 @@ fun ContactsScreen(
                     .padding(16.dp)
             ) {
                 item { CompanyHeader() }
+                item {
+                    ContactActionTiles(modifier = Modifier.padding(bottom = 16.dp))
+                }
                 items(state.contacts) { contact ->
                     ContactItem(contact)
                 }

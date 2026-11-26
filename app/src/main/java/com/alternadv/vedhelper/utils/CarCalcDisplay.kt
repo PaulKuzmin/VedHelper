@@ -47,9 +47,11 @@ fun pickAmount(mode: String, rub: Double?, usd: Double?, cur: Double?): Double? 
     else -> cur
 }
 
+private fun formatMoneyRu(value: Double?): String =
+    value?.let { String.format(Locale.forLanguageTag("ru-RU"), "%,.2f", it).replace('\u00A0', ' ') } ?: "—"
+
 /** Нет суммы — прочерк, а не доллары под подписью другой валюты. */
-fun formatSum(value: Double?): String =
-    value?.let { String.format(Locale.US, "%,.2f", it) } ?: "—"
+fun formatSum(value: Double?): String = formatMoneyRu(value)
 
 private val CURRENCY_SHORT = mapOf(
     "840" to "USD",
@@ -104,6 +106,5 @@ fun CarCalculation.pdfSecondAmountColumn(): PdfAmountColumn =
         PdfAmountColumn(mode = "dollars", header = PDF_USD_HEADER)
     }
 
-/** Сумма для таблицы PDF: с разделителем тысяч; нет суммы — прочерк. */
-fun formatPdfSum(value: Double?): String =
-    value?.let { String.format(Locale.US, "%,.2f", it) } ?: "—"
+/** Сумма для таблицы PDF: тот же русский формат, что и на экране. */
+fun formatPdfSum(value: Double?): String = formatMoneyRu(value)

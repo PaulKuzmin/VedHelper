@@ -101,9 +101,13 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         BottomNavItem.Contacts.route
     )
     // на результатах FAB перекрывает суммы — там его не показываем
-    val resultScreens = listOf(
+    val noFabScreens = listOf(
         BottomNavItem.CalcResult.route,
-        BottomNavItem.CarCalcResult.route
+        BottomNavItem.CarCalcResult.route,
+        BottomNavItem.Contacts.route,
+        BottomNavItem.CarCalc.route,
+        BottomNavItem.Tnved.route,
+        BottomNavItem.TnvedCode.route
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -149,7 +153,7 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
         Scaffold(
             //
             floatingActionButton = {
-                if (currentRoute !in resultScreens) {
+                if (currentRoute !in noFabScreens) {
                     ExpandableFabMenu(
                     modifier = Modifier.offset(y = -FabMenuOffsetY),
                     items = listOf(
@@ -176,14 +180,14 @@ fun MainAppScreen(viewModel: MainAppViewModel = viewModel()) {
                             "WhatsApp",
                             iconPainter = painterResource(id = R.drawable.whatsapp_outline_icon)
                         ) {
-                            val url = "https://wa.me/79510275454?text=Здравствуйте!"
+                            val url = "https://wa.me/79020519847?text=Здравствуйте!"
                             context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                         },
                         FabMenuItem(
                             "Telegram",
                             iconPainter = painterResource(id = R.drawable.telegram_outline_icon)
                         ) {
-                            val url = "https://t.me/alterna_manager"
+                            val url = "https://t.me/alternadv_goods"
                             context.startActivity(Intent(Intent.ACTION_VIEW, url.toUri()))
                         },
                         FabMenuItem(
