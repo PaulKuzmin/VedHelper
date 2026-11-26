@@ -100,15 +100,23 @@ fun TnvedCodeScreen(
                         .padding(
                             start = 16.dp,
                             end = 16.dp,
-                            top = 0.dp,
+                            top = 12.dp,
                             bottom = innerPadding.calculateBottomPadding()
                         )
                 ) {
                     // --- Фиксированный блок ---
-                    Text(text = "${data?.code}", style = MaterialTheme.typography.titleLarge)
-                    Spacer(Modifier.height(4.dp))
-                    Text(text = "${data?.name}", style = MaterialTheme.typography.bodyLarge)
-                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = data?.code.orEmpty(),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        text = data?.name.orEmpty(),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(20.dp))
 
                     // --- Прокручиваемая часть ---
                     LazyColumn {
@@ -154,4 +162,3 @@ fun TnvedCodeScreen(
         }
     }
 }
-
